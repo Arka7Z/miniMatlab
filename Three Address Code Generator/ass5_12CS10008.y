@@ -8,6 +8,7 @@
 	extern type_e TYPE;
 	extern int gDebug;
     extern bool transRUN;
+    extern bool rowison;
 
 %}
 
@@ -35,7 +36,7 @@
 
 %token ELLIPSIS RIGHT_ASSIGN LEFT_ASSIGN ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN
 %token DIV_ASSIGN MOD_ASSIGN AND_ASSIGN XOR_ASSIGN OR_ASSIGN RIGHT_OP LEFT_OP 
-%token INC_OP DEC_OP PTR_OP AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP TRANSPOSE
+%token INC_OP DEC_OP PTR_OP AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP TRANSPOSE 
 
 %token <strval> STRING_LITERAL
 %token <symp>IDENTIFIER  PUNCTUATORS COMMENT
@@ -67,6 +68,8 @@
 	conditional_expression
 	assignment_expression
 	expression_statement
+    empty_token
+
 
 %type <uop> unary_operator
 %type <symp> constant initializer initializer_row_list designation
@@ -116,8 +119,16 @@ constant
 		emit(EQUAL, $$->name, $1);
 	}
 	| FLOAT_CONSTANT {
+        if (rowison==false)
+        {
 		$$ = gentemp(_DOUBLE, *new string ($1));
 		emit(EQUAL, $$->name, *new string($1));
+        }
+        else
+         {
+            $$=new sym(*new string($1),_DOUBLE);
+            $$->init=*new string($1);
+           }
 	}
 	| ENU_CONSTANT {	/* Ignored */
 	}
@@ -704,9 +715,13 @@ assignment_expression
 			case _MATRIX:
 				$3->symp = conv($3->symp, $1->type->cat);
                 if (transRUN==false)
-				    emit(ARRL, $1->symp->name, $1->loc->name, $3->symp->name);
+				        emit(ARRL, $1->symp->name, $1->loc->name, $3->symp->name);
                 else
-                    emit(EQUAL, $1->symp->name,$3->symp->name);	
+                    {
+                        //cout<<"DEBUG"<<endl;
+                        emit(EQUAL, $1->symp->name,$3->symp->name);
+                        transRUN=false;
+                    }	
 				break;
 			case PTR:
 				emit(PTRL, $1->symp->name, $3->symp->name);	
@@ -787,7 +802,9 @@ init_declarator
 		debug ($3->init);
 
 		if ($3->init!="") $1->initialize($3->init);
+        //if ($1->type->cat!=_MATRIX)
 		emit (EQUAL, $1->name, $3->name);
+        //cout<<"DEBUG"<<endl;
 		debug ("here init");
 	}
 	;
@@ -1027,7 +1044,8 @@ initializer_row_list:
                 initializer_row
                 { $$=$1;    }
             |   initializer_row ';' initializer_row
-                {   $$=$1;
+                {   rowison=true;
+                    $$=$1;
                     $$->init=$1->init+";"+$3->init;}
         ;
 initializer_row
@@ -1050,15 +1068,18 @@ initializer
 	: assignment_expression {
 		$$ = $1->symp;
 	}
-	| '{' initializer_row_list '}' 
+	| '{' empty_token initializer_row_list '}' 
         {
-              
-              $$=$2;
-              $$->init="{"+$2->init+"}";
+              rowison=false;
+              $$=$3;
+              $$->init="{"+$3->init+"}";
+              sym* t=gentemp(_DOUBLE, $$->init);
+              $$->name=t->name;
         }
 
 	;
 
+empty_token:    %empty  {rowison=true;}
 designation
 	: designator_list '='
 	{printf("designation\n");}
