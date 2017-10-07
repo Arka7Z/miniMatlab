@@ -156,7 +156,7 @@ postfix_expression
 		// New address = already computed + $3 * new width
 		if ($1->cat==_MATRIX) {		// if something already computed
 			sym* t = gentemp(_INT);
- 			emit(MULT, t->name, $3->symp->name, tostr(8));
+ 			emit(MULT, t->name, $3->symp->name, tostr(4));
             sym* t1=gentemp(_INT);
             emit(ARRR, t1->name, $1->symp->name,tostr(4));
             sym* t2=gentemp(_INT);
@@ -260,7 +260,13 @@ postfix_expression
 	}
     | postfix_expression TRANSPOSE{
             transRUN=true;
+            //int row_save=$1->symp->type->row;
+            //int column_save=$1->symp->type->column;
             sym* t=gentemp($1->type,"transpose");
+            //t->type->row=column_save;
+            //t->type->column=row_save;
+            //$1->symp->type->row=row_save;
+            //$1->symp->type->column=column_save;
             emit(TRANSOP,t->name,$1->symp->name);
             $$->symp=t;
         }
@@ -410,7 +416,10 @@ multiplicative_expression
 			
             if (transRUN==false)
                {
-                $$->symp = gentemp(_DOUBLE);
+                symtype *t=new symtype($1->cat,NULL,0);
+                t->row=$1->symp->type->row;
+                t->column=$1->symp->type->column;
+                $$->symp = gentemp(t,"Mat_temp");
 			  emit(ARRR, $$->symp->name, $1->symp->name, $1->loc->name);
                 }
             else
@@ -1080,6 +1089,7 @@ initializer
 	;
 
 empty_token:    %empty  {rowison=true;}
+
 designation
 	: designator_list '='
 	{printf("designation\n");}
