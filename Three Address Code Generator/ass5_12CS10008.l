@@ -33,7 +33,8 @@ WS  				[ \t\v\n\f]
 "/*"			{ comment(); }
 "//".*  	   	{  /* consume //-comment */ }
 
-"auto"			{ return AUTO; }
+"0"             { 	yylval.intval = atoi(yytext);
+					return ZERO; }
 "break"         { return BREAK; }
 "case"          { return CASE; }
 "char"          { return CHAR; }
@@ -43,33 +44,30 @@ WS  				[ \t\v\n\f]
 "do"            { return DO; }
 "double"        { return DOUBLE; }
 "else"          { return ELSE; }
-"enum"          { return ENUM; }
-"extern"        { return EXTERN; }
+
 "float"         { return FLOAT; }
 "for"           { return FOR; }
 "goto"          { return GOTO; }
 "if"            { return IF; }
-"inline"        { return INLINE; }
+
 "int"           { return INT; }
 "long"          { return LONG; }
-"register"      { return REGISTER; }
-"restrict"      { return RESTRICT; }
+
 "return"        { return RETURN; }
 "short"         { return SHORT; }
 "signed"        { return SIGNED; }
 "sizeof"        { return SIZEOF; }
-"static"        { return STATIC; }
-"struct"        { return STRUCT; }
+
+
 "switch"        { return SWITCH; }
-"typedef"       { return TYPEDEF; }
-"union"         { return UNION; }
+
+
 "unsigned"      { return UNSIGNED; }
 "void"          { return VOID; }
-"volatile"      { return VOLATILE; }
+
 "while"         { return WHILE; }
 "_Bool"         { return BOOL; }
-"_Complex"      { return COMPLEX; }
-"_Imaginary"    { return IMAGINARY; }
+
 "Matrix"        { return MATRIX;    }
 
 {SC} 			{ 	yylval.strval = yytext;
