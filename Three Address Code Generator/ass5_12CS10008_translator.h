@@ -126,7 +126,7 @@ private:
 /*********** Function Declarations *********/
 
 sym* gentemp (type_e t=_INT, string init = "");		// Generate a temporary variable and insert it in symbol table
-sym* gentemp (symtype* t, string init = "");		// Generate a temporary variable and insert it in symbol table
+sym* gentemp (symtype* t, string init = "",bool decl=false);		// Generate a temporary variable and insert it in symbol table
 
 void backpatch (list <int>, int);
 void emit(optype opL, string result, string arg1="", string arg2 = "");
