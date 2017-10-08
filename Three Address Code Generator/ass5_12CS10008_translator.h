@@ -10,6 +10,7 @@
 #define size_of_pointer		4
 #define traverse(container,it) for( it= container.begin(); it != container.end(); ++it)
 #define traverse2(container,it) for(typeof(container.begin()) it= container.begin(); it != container.end(); ++it)
+#define SSTR( x ) static_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
 #define debug(x) do { \
   if (gDebug) { cerr << x << std::endl; } \
 } while (0)
@@ -22,7 +23,7 @@ using namespace std;
 /********* Forward Declarations ************/
 
 class sym;						// Entry in a symbol table
-class symtab;					// Symbol Table
+class symbolTable;					// Symbol Table
 class quad;						// Entry in quad array
 class quads;					// All Quads
 class symtype;					// Type of a symbol in symbol table
@@ -32,10 +33,10 @@ class symtype;					// Type of a symbol in symbol table
 
 enum optype { EQUAL,
 // Relational Operators
-LT, GT, LE, GE, EQOP, NEOP,
+LT, GreaterThan, LE, GE, EQOP, NEOP,
 GOTOOP, _RETURN,
 // Arithmatic Operators
-ADD, SUB, MULT, DIVIDE, RIGHTOP, LEFTOP, MODOP,
+ADD, SUB, MULT, DIVIDE, RIGHTSHIFT, LEFTSHIFT, MODULUS,
 // Unary Operators
 UMINUS, UPLUS, ADDRESS, RIGHT_POINTER, BNOT, LNOT,TRANSOP,
 // Bit Operators
@@ -64,33 +65,34 @@ public:
 	friend ostream& operator<<(ostream&, const symtype);
 };
 
-class sym { // Row in a Symbol Table
+class sym
+{ // Row in a Symbol Table
 public:
 	string name;				// Name of symbol
 	symtype *type;				// Type of Symbol
 	string init;				// Symbol initialisation
 	string category;			// local, temp or global
 	int size;					// Size of the type of symbol
-    int row,column;
+  int row,column;
 	int offset;					// Offset of symbol computed at the end
-	symtab* nest;				// Pointer to nested symbol table
+	symbolTable* nest;				// Pointer to nested symbol table
 
 	sym (string, type_e t=_INT, symtype* ptr = NULL, int width = 0);
 	sym* update(symtype * t); 	// Update using type object and nested table pointer
 	sym* update(type_e t); 		// Update using raw type and nested table pointer
 	sym* initialize (string);
 	friend ostream& operator<<(ostream&, const sym*);
-	sym* linkst(symtab* t);
+	sym* linkst(symbolTable* t);
 };
 
-class symtab { // Symbol Table
+class symbolTable { // Symbol Table
 public:
 	string tname;				// Name of Table
 	int tcount;					// Count of temporary variables
 	list <sym> table; 			// The table of symbols
-	symtab* parent;
+	symbolTable* parent;
 
-	symtab (string name="");
+	symbolTable (string name="");
 	sym* lookup (string name);					// Lookup for a symbol in symbol table
 	void print(int all = 0);					// Print the symbol table
 	void computeOffsets();						// Compute offset of the whole symbol table recursively
@@ -124,7 +126,7 @@ public:
    static Singleton* GetInstance();
 private:
    Singleton();
-   static Singleton* pSingleton;					// singleton instance
+   static Singleton* pointerToSingleton;					// singleton instance
 };
 
 /*********** Function Declarations *********/
@@ -150,18 +152,19 @@ bool typecheck(symtype* s1, symtype* s2);			// Check if the type objects are equ
 int nextinstr();									// Returns the address of the next instruction
 string NumberToString(int);							// Converts a number to string mainly used for storing numbers
 
-void changeTable (symtab* newtable);
+void changeTable (symbolTable* newtable);
 
 /*** Global variables declared in cxx file****/
 
-extern symtab* table;			// Current Symbol Table
-extern symtab* globalSymbolTable;			// Global Symbol Table
+extern symbolTable* table;			// Current Symbol Table
+extern symbolTable* globalSymbolTable;			// Global Symbol Table
 extern quads quadarray;				// Quads
 extern sym* currsym;			// Pointer to just encountered symbol
 
 /** Attributes/Global for Boolean Expression***/
 
-struct expr {
+struct expr
+{
 	bool isbool;				// Boolean variable that stores if the expression is bool
 
 	// Valid for non-bool type
@@ -187,15 +190,14 @@ struct unary {
 };
 
 // Utility functions
-template <typename T> string tostr(const T& t) {
-   ostringstream os;
-   os<<t;
-   return os.str();
+template <typename T> string tostr(const T& t)
+{
+   ostringstream outstream;
+   outstream<<t;
+   return outstream.str();
 }
 
 expr* convert2bool (expr*);				// convert any expression to bool
 expr* convertfrombool (expr*);			// convert bool to expression
 
-// For debugging
-void printlist (list<int> list);				// Print the list of integers
 #endif

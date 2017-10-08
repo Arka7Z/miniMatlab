@@ -409,7 +409,7 @@ multiplicative_expression
 		if (typecheck ($1->symp, $3->symp) ) {
 			$$ = new expr();
 			$$->symp = gentemp($1->symp->type->cat);
-			emit (MODOP, $$->symp->name, $1->symp->name, $3->symp->name);
+			emit (MODULUS, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
 		else cout << "Type Error"<< endl;
 	}
@@ -441,7 +441,7 @@ shift_expression
 		if ($3->symp->type->cat == _INT) {
 			$$ = new expr();
 			$$->symp = gentemp (_INT);
-			emit (LEFTOP, $$->symp->name, $1->symp->name, $3->symp->name);
+			emit (LEFTSHIFT, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
 		else cout << "Type Error"<< endl;
 	}
@@ -449,7 +449,7 @@ shift_expression
 		if ($3->symp->type->cat == _INT) {
 			$$ = new expr();
 			$$->symp = gentemp (_INT);
-			emit (RIGHTOP, $$->symp->name, $1->symp->name, $3->symp->name);
+			emit (RIGHTSHIFT, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
 		else cout << "Type Error"<< endl;
 	}
@@ -478,7 +478,7 @@ relational_expression
 
 			$$->truelist = makelist (nextinstr());
 			$$->falselist = makelist (nextinstr()+1);
-			emit(GT, "", $1->symp->name, $3->symp->name);
+			emit(GreaterThan, "", $1->symp->name, $3->symp->name);
 			emit (GOTOOP, "");
 		}
 		else cout << "Type Error"<< endl;
@@ -880,7 +880,7 @@ direct_declarator
 	;
 
 CST : %empty { // Used for changing to symbol table for a function
-		if (currsym->nest==NULL) changeTable(new symtab(""));	// Function symbol table doesn't already exist
+		if (currsym->nest==NULL) changeTable(new symbolTable(""));	// Function symbol table doesn't already exist
 		else {
 			changeTable (currsym ->nest);						// Function symbol table already exists
 			emit (LABEL, table->tname);
