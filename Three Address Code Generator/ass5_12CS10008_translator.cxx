@@ -10,6 +10,7 @@ bool gDebug = false;			// Debug mode
 bool transRUN=false;
 symtab* table;					// Points to current symbol table
 sym* currsym; 					// points to latest function entry in symbol table
+bool rowison=false;
 
 /* Singleton Design Pattern */
 Singleton* Singleton::pSingleton= NULL;
@@ -104,26 +105,53 @@ sym* gentemp (type_e t, string init) {
 	return &table->table.back();
 }
 
-sym* gentemp (symtype* t, string init) {
+sym* gentemp (symtype* t, string init,bool decl) {
     char n[20];
     sprintf(n, "t%02d", table->tcount++);
     sym* s = new sym (n);
-    s->type = t;
+   
     if(init!="transpose")
-        s-> init = init;
+       { s-> init = init;
+          s->type = t;
+        }
     if(init == "transpose"){
-        s->type->row = t->column;
+        int a,b;
+        a=s->type->row = t->column;
         s->type->cat=_MATRIX;
-        s->type->column = t->row;
+        b=s->type->column = t->row;
+        //cout<<a<<" "<<b<<endl;
+        //cout<<a<<"   "<<b<<endl;
         s->size = (t->row*t->column*8 + 8);
     }
     s->category = "temp";
+    if (init=="Mat_temp")
+        {
+            //cout<<"HELOO"<<endl;
+            s->init="";
+            
+            s->type->row = t->column;
+            s->type->column = t->row;
+            s->size = (t->row*t->column*8 + 8);
+            table->table.push_back ( *s);
+        }
+    if (decl)
+         {
+
+        s->init=init;
+            s->type->row = t->row;
+            s->type->column = t->column;
+            s->size = (t->row*t->column*8 + 8);
+            table->table.push_back ( *s);
+        }
+     
     if(t->cat!=_MATRIX || init=="transpose"){
         table->table.push_back ( *s);
     }
-    else{
+    else {
         table->tcount--;
     }
+    if (init=="Mat_temp"||decl)
+        table->tcount++;
     if (gDebug) table->print();
     return &table->table.back();
 }
@@ -143,28 +171,28 @@ void symtab::print(int all) {
 */
 void symtab::print(int all) {
 	list<symtab*> tablelist;
-	cout << setw(80) << setfill ('=') << "="<< endl;
+	cout << setw(160) << setfill ('=') << "="<< endl;
 	cout << "Symbol Table: " << setfill (' ') << left << setw(35)  << this -> tname ;
 	cout << right << setw(20) << "Parent: ";
 	if (this->parent!=NULL)
 		cout << this -> parent->tname;
 	else cout << "null" ;
 	cout << endl;
-	cout << setw(80) << setfill ('-') << "-"<< endl;
+	cout << setw(160) << setfill ('-') << "-"<< endl;
 	cout << setfill (' ') << left << setw(16) << "Name";
-	cout << left << setw(12) << "Type";
+	cout << left << setw(30) << "Type";
 	cout << left << setw(12) << "Category";
-	cout << left << setw(12) << "Init Val";
+	cout << left << setw(40) << "Init Val";
 	cout << left << setw(8) << "Size";
 	cout << left << setw(8) << "Offset";
 	cout << left << "Nest" << endl;
-	cout << setw(80) << setfill ('-') << "-"<< setfill (' ') << endl;
+	cout << setw(160) << setfill ('-') << "-"<< setfill (' ') << endl;
 	
 	for (list <sym>::iterator it = table.begin(); it!=table.end(); it++) {
 		cout << &*it;
 		if (it->nest!=NULL) tablelist.push_back (it->nest);
 	}
-	cout << setw(80) << setfill ('-') << "-"<< setfill (' ') << endl;
+	cout << setw(160) << setfill ('-') << "-"<< setfill (' ') << endl;
 	cout << endl;
 	if (all) {
 		for (list<symtab*>::iterator iterator = tablelist.begin();
@@ -210,9 +238,9 @@ ostream& operator<<(ostream& os, const symtype* t) {
 }
 ostream& operator<<(ostream& os, const sym* it) {
 	os << left << setw(16) << it->name;
-	os << left << setw(16) << it->type;
+	os << left << setw(30) << it->type;
 	os << left << setw(12) << it->category;
-	os << left << setw(12) << it->init;
+	os << left << setw(40) << it->init;
 	os << left << setw(8) << it->size;
 	os << left << setw(8) << it->offset;
 	os << left;
