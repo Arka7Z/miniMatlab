@@ -1,4 +1,4 @@
-#ifndef TRANSLATE 
+#ifndef TRANSLATE
 #define TRANSLATE
 #include <bits/stdc++.h>
 #include <iostream>
@@ -8,7 +8,8 @@
 #define size_of_int  		4
 #define size_of_double		8
 #define size_of_pointer		4
-
+#define traverse(container,it) for( it= container.begin(); it != container.end(); ++it)
+#define traverse2(container,it) for(typeof(container.begin()) it= container.begin(); it != container.end(); ++it)
 #define debug(x) do { \
   if (gDebug) { cerr << x << std::endl; } \
 } while (0)
@@ -28,10 +29,9 @@ class symtype;					// Type of a symbol in symbol table
 
 /************** Enum types *****************/
 
-enum type_e {	// Type enumeration
-_VOID, _CHAR, _INT, _DOUBLE, PTR, ARR, FUNC, _MATRIX}; 	
-enum optype { EQUAL, 
-// Relational Operators 
+
+enum optype { EQUAL,
+// Relational Operators
 LT, GT, LE, GE, EQOP, NEOP,
 GOTOOP, _RETURN,
 // Arithmatic Operators
@@ -46,6 +46,9 @@ PTRL, PTRR,
 ARRR, ARRL,
 // Function call
 PARAM, CALL, LABEL
+};enum type_e
+{	// Type enumeration
+_VOID, _CHAR, _INT, _DOUBLE, PTR, ARR, FUNC, _MATRIX
 };
 
 /********** Class Declarations *************/
@@ -56,7 +59,7 @@ public:
 	type_e cat;
 	int width;					// Size of array
     int column,row;
-	symtype* ptr;				// Array -> array of ptr type; pointer-> pointer to ptr type 
+	symtype* ptr;				// Array -> array of ptr type; pointer-> pointer to ptr type
 
 	friend ostream& operator<<(ostream&, const symtype);
 };
@@ -106,7 +109,8 @@ public:
 	quad (string result, int arg1, optype op = EQUAL, string arg2 = "");
 };
 
-class quads { // Quad Array
+class quads
+{ // Quad Array
 public:
 	vector <quad> array;;		// Vector of quads
 
@@ -132,13 +136,12 @@ void backpatch (list <int>, int);
 void emit(optype opL, string result, string arg1="", string arg2 = "");
 void emit(optype op, string result, int arg1, string arg2 = "");
 
-typedef list<int> lint;
 list<int> makelist (int);							// Make a new list contaninig an integer
 list<int> merge (list<int> &, list <int> &);		// Merge two lists
 
 int sizeoftype (symtype*);							// Calculate size of any type
-string convert_to_string (const symtype*);			// For printing type structure
-string optostr(int);
+string returnTypeString (const symtype*);			// For printing type structure
+string opCodeToString(int);
 
 sym* conv (sym*, type_e);							// Convert symbol to different type
 bool typecheck(sym* &s1, sym* &s2);					// Checks if two symbbol table entries have same type
@@ -151,9 +154,9 @@ void changeTable (symtab* newtable);
 
 /*** Global variables declared in cxx file****/
 
-extern symtab* table;			// Current Symbbol Table
-extern symtab* gTable;			// Global Symbbol Table
-extern quads qarr;				// Quads
+extern symtab* table;			// Current Symbol Table
+extern symtab* globalSymbolTable;			// Global Symbol Table
+extern quads quadarray;				// Quads
 extern sym* currsym;			// Pointer to just encountered symbol
 
 /** Attributes/Global for Boolean Expression***/
@@ -165,15 +168,15 @@ struct expr {
 	sym* symp;					// Pointer to the symbol table entry
 
 	// Valid for bool type
-	lint truelist;				// Truelist valid for boolean
-	lint falselist;				// Falselist valid for boolean expressions
+	list<int> truelist;				// Truelist valid for boolean
+	list<int> falselist;				// Falselist valid for boolean expressions
 
 	// Valid for statement expression
-	lint nextlist;
+	list<int> nextlist;
 };
 
 struct statement {
-	lint nextlist;				// Nextlist for statement
+	list<int> nextlist;				// Nextlist for statement
 };
 
 struct unary {
@@ -184,15 +187,15 @@ struct unary {
 };
 
 // Utility functions
-template <typename T> string tostr(const T& t) { 
-   ostringstream os; 
-   os<<t; 
-   return os.str(); 
-} 
+template <typename T> string tostr(const T& t) {
+   ostringstream os;
+   os<<t;
+   return os.str();
+}
 
 expr* convert2bool (expr*);				// convert any expression to bool
 expr* convertfrombool (expr*);			// convert bool to expression
 
-// For debugging 
-void printlist (lint list);				// Print the list of integers
+// For debugging
+void printlist (list<int> list);				// Print the list of integers
 #endif

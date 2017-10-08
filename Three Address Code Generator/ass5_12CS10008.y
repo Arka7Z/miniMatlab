@@ -1,4 +1,4 @@
- %{ 
+ %{
 
 	#include <string.h>
 	#include <stdio.h>
@@ -29,32 +29,32 @@
 
 
 %token CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOLATILE VOID MATRIX
-%token BOOL 
+%token BOOL
 
 %token BREAK CASE CONTINUE DEFAULT DO IF ELSE FOR GOTO WHILE SWITCH SIZEOF
 %token RETURN
 
 %token ELLIPSIS RIGHT_ASSIGN LEFT_ASSIGN ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN
-%token DIV_ASSIGN MOD_ASSIGN AND_ASSIGN XOR_ASSIGN OR_ASSIGN RIGHT_OP LEFT_OP 
-%token INC_OP DEC_OP PTR_OP AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP TRANSPOSE 
+%token DIV_ASSIGN MOD_ASSIGN AND_ASSIGN XOR_ASSIGN OR_ASSIGN RIGHT_OP LEFT_OP
+%token INC_OP DEC_OP PTR_OP AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP TRANSPOSE
 
 %token <strval> STRING_LITERAL
 %token <symp>IDENTIFIER  PUNCTUATORS COMMENT
-%token <intval>INT_CONSTANT ZERO
-	
+%token <intval>INT_CONSTANT
+
 %token <strval> FLOAT_CONSTANT
-	ENU_CONSTANT 
+	ENU_CONSTANT
 %token <char>CHAR_CONSTANT
 
 %start translation_unit
-   	
+
 // Expressions
 %type <A> postfix_expression
 	unary_expression
 	cast_expression
 %type <exp>
 	expression
-	primary_expression 
+	primary_expression
 	multiplicative_expression
 	additive_expression
 	shift_expression
@@ -82,9 +82,9 @@
 %type <intval> argument_expression_list
 
 %type <stat>  statement
-	labeled_statement 
+	labeled_statement
 	compound_statement
-	
+
 	selection_statement
 	iteration_statement
 	jump_statement
@@ -130,12 +130,7 @@ constant
             $$->init=*new string($1);
            }
 	}
-    |ZERO
-       {$$ = gentemp(_INT, NumberToString($1));
-		emit(EQUAL, $$->name, $1);
-       }
-	| ENU_CONSTANT {	/* Ignored */
-	}
+
 	| CHAR_CONSTANT{
 		$$ = gentemp(_CHAR);
 		emit(EQUAL, $$->name, "a");
@@ -152,12 +147,12 @@ postfix_expression
 	}
 	| postfix_expression '[' expression ']''['expression']' {
 		$$ = new unary();
-		
+
 		$$->symp = $1->symp;			// copy the base
 		$$->type = $1->type->ptr;		// type = type of element
 		$$->loc = new sym("",_INT);		// store computed address
 
-		if ($1->cat==_MATRIX) {		
+		if ($1->cat==_MATRIX) {
 			sym* t = gentemp(_INT);
  			emit(MULT, t->name, $3->symp->name, tostr(4));
             sym* t1=gentemp(_INT);
@@ -204,7 +199,7 @@ postfix_expression
             emit(ARRR,t2->name,$1->symp->name,$1->loc->name);
             emit(ADD,t1->name,t1->name, "1");
             emit(ARRL,$1->symp->name,$1->loc->name,t1->name);
-            $$->symp=t2;   
+            $$->symp=t2;
         }
         else
         {
@@ -225,7 +220,7 @@ postfix_expression
             emit(ARRR,t2->name,$1->symp->name,$1->loc->name);
             emit(SUB,t1->name,t1->name, "1");
             emit(ARRL,$1->symp->name,$1->loc->name,t1->name);
-            $$->symp=t2;   
+            $$->symp=t2;
         }
         else
         {
@@ -259,11 +254,11 @@ argument_expression_list
 	;
 
 unary_expression
-	: postfix_expression 
+	: postfix_expression
     {
 		$$ = $1;
 	}
-	| INC_OP unary_expression 
+	| INC_OP unary_expression
     {
         if ($2->symp->type->cat==_MATRIX)
         {
@@ -271,7 +266,7 @@ unary_expression
             emit(ARRR,t1->name,$2->symp->name,$2->loc->name);
             emit(ADD,t1->name,t1->name, "1");
             emit(ARRL,$2->symp->name,$2->loc->name,t1->name);
-   
+
         }
         else
         {
@@ -286,7 +281,7 @@ unary_expression
             sym* t1=gentemp(_DOUBLE);
             emit(ARRR,t1->name,$2->symp->name,$2->loc->name);
             emit(SUB,t1->name,t1->name, "1");
-            emit(ARRL,$2->symp->name,$2->loc->name,t1->name); 
+            emit(ARRL,$2->symp->name,$2->loc->name,t1->name);
         }
         else{
 		// Decrement $1
@@ -309,7 +304,7 @@ unary_expression
                                 string location=$2->loc->name;
                                 emit(EQUAL, $$->symp->name,"&"+array_name+"["+location+"]" );
                             }
-                        else 
+                        else
 				            emit (ADDRESS, $$->symp->name, $2->symp->name);
 				        break;
 			case '*':
@@ -368,11 +363,11 @@ cast_expression
 	;
 
 multiplicative_expression
-	: cast_expression 
+	: cast_expression
         {
 		$$ = new expr();
 		if ($1->cat==_MATRIX) { // Array
-			
+
             if (transRUN==false)
                {
                 symtype *t=new symtype($1->cat,NULL,0);
@@ -494,7 +489,7 @@ relational_expression
 			$$ = new expr();
 			$$->isbool = true;
 
-			$$->truelist = makelist (nextinstr()); 
+			$$->truelist = makelist (nextinstr());
 			$$->falselist = makelist (nextinstr()+1);
 			emit(LE, "", $1->symp->name, $3->symp->name);
 			emit (GOTOOP, "");
@@ -522,10 +517,10 @@ equality_expression
 			// If any is bool get its value
 			convertfrombool ($1);
 			convertfrombool ($3);
-			
+
 			$$ = new expr();
 			$$->isbool = true;
-			
+
 			$$->truelist = makelist (nextinstr());
 			$$->falselist = makelist (nextinstr()+1);
 			emit (EQOP, "", $1->symp->name, $3->symp->name);
@@ -538,10 +533,10 @@ equality_expression
 			// If any is bool get its value
 			convertfrombool ($1);
 			convertfrombool ($3);
-			
+
 			$$ = new expr();
 			$$->isbool = true;
-			
+
 			$$->truelist = makelist (nextinstr());
 			$$->falselist = makelist (nextinstr()+1);
 			emit (NEOP, $$->symp->name, $1->symp->name, $3->symp->name);
@@ -593,7 +588,7 @@ inclusive_or_expression
 
 			$$ = new expr();
 			$$->isbool = false;
-			
+
 			$$->symp = gentemp (_INT);
 			emit (INOR, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
@@ -656,12 +651,12 @@ conditional_expression
 		$$->symp = gentemp();
 		$$->symp->update($5->symp->type);
 		emit(EQUAL, $$->symp->name, $9->symp->name);
-		lint l = makelist(nextinstr());
+		list<int> l = makelist(nextinstr());
 		emit (GOTOOP, "");
 
 		backpatch($6->nextlist, nextinstr());
 		emit(EQUAL, $$->symp->name, $5->symp->name);
-		lint m = makelist(nextinstr());
+		list<int> m = makelist(nextinstr());
 		l = merge (l, m);
 		emit (GOTOOP, "");
 
@@ -687,10 +682,10 @@ assignment_expression
                     {
                         emit(EQUAL, $1->symp->name,$3->symp->name);
                         transRUN=false;
-                    }	
+                    }
 				break;
 			case PTR:
-				emit(PTRL, $1->symp->name, $3->symp->name);	
+				emit(PTRL, $1->symp->name, $3->symp->name);
 				break;
 			default:
 				$3->symp = conv($3->symp, $1->symp->type->cat);
@@ -740,7 +735,7 @@ declaration
 	;
 
 declaration_specifiers
-	: 
+	:
        type_specifier
 	| type_specifier declaration_specifiers
 
@@ -789,7 +784,7 @@ type_specifier
 	| BOOL
 
     | MATRIX
-        { TYPE=_MATRIX; }  
+        { TYPE=_MATRIX; }
 	//{printf("type_specifier\n");}
 	;
 
@@ -828,7 +823,7 @@ direct_declarator
                 s->column=atoi($6->symp->init.c_str());
 			    int y = sizeoftype(s);
 			    $$ = $1->update(s);
- 
+
 	    }
 	| direct_declarator '[' ']' {
 		symtype * t = $1 -> type;
@@ -854,31 +849,31 @@ direct_declarator
 
 		if ($1->type->cat !=_VOID) {
 			sym *s = table->lookup("retVal");
-			s->update($1->type);		
+			s->update($1->type);
 		}
 
 		$1 = $1->linkst(table);
 
-		table->parent = gTable;
-		changeTable (gTable);				// Come back to globalsymbol table
+		table->parent = globalSymbolTable;
+		changeTable (globalSymbolTable);				// Come back to globalsymbol table
 
-		currsym = $$;						
+		currsym = $$;
 	}
 	| direct_declarator '(' identifier_list ')' { /* Ignored */
 
 	}
-	| direct_declarator '(' CST ')' {		
+	| direct_declarator '(' CST ')' {
 		table->tname = $1->name;			// Update function symbol table name
 
 		if ($1->type->cat !=_VOID) {
 			sym *s = table->lookup("retVal");// Update type of return value
 			s->update($1->type);
 		}
-		
+
 		$1 = $1->linkst(table);		// Update type of function in global table
-	
-		table->parent = gTable;
-		changeTable (gTable);				// Come back to globalsymbol table
+
+		table->parent = globalSymbolTable;
+		changeTable (globalSymbolTable);				// Come back to globalsymbol table
 
 		currsym = $$;
 	}
@@ -916,7 +911,7 @@ parameter_type_list
 
 parameter_list
 	: parameter_declaration
-	| parameter_list ',' parameter_declaration 
+	| parameter_list ',' parameter_declaration
 	;
 
 parameter_declaration
@@ -928,7 +923,7 @@ parameter_declaration
 	;
 
 identifier_list
-	: IDENTIFIER 
+	: IDENTIFIER
 	| identifier_list ',' IDENTIFIER
 
 	;
@@ -937,7 +932,7 @@ identifier_list
 
 
 
-initializer_row_list: 
+initializer_row_list:
                 initializer_row
                 { $$=$1;    }
             |   initializer_row_list ';' initializer_row
@@ -952,22 +947,22 @@ initializer_row
 	| designation initializer
         {
             $$=$2;
-        }          
+        }
 	| initializer_row ',' initializer
-        {   
+        {
 
             $$=$1;
             $$->init=$1->init+","+$3->init;
         }
-   
+
 	;
 initializer
 	: assignment_expression {
 		$$ = $1->symp;
 	}
-	| '{' empty_token initializer_row_list '}' 
+	| '{' empty_token initializer_row_list '}'
         {
-              
+
               $$=$3;
               string initial="{"+$3->init+"}";
               $$->init=initial;
@@ -985,7 +980,7 @@ initializer
                     else    ;
                 }
              //sym* t=gentemp(_DOUBLE, initial);
-              
+
 
                 symtype *t=new symtype(_MATRIX,NULL,0);
                 t->row=ro;
@@ -1057,9 +1052,9 @@ compound_statement
 
 block_item_list
 	: block_item {
-		$$ = $1;		
+		$$ = $1;
 	}
-	| block_item_list M block_item 
+	| block_item_list M block_item
         {
 		    $$ = $3;
 		    backpatch ($1->nextlist, $2);
@@ -1067,7 +1062,7 @@ block_item_list
 	;
 
 block_item
-	: declaration { 
+	: declaration {
 		$$ = new statement();
 
 	}
@@ -1090,9 +1085,9 @@ selection_statement
 		convert2bool($3);
 		$$ = new statement();
 		backpatch ($3->truelist, $6);
-		lint temp = merge ($3->falselist, $7->nextlist);
+		list<int> temp = merge ($3->falselist, $7->nextlist);
 		$$->nextlist = merge ($8->nextlist, temp);
-		
+
 	}
 	| IF '(' expression N ')' M statement N ELSE M statement {
 		backpatch ($8->nextlist, nextinstr());
@@ -1107,8 +1102,8 @@ selection_statement
 	{printf("selection_statement\n");}
 	;
 
-iteration_statement 	
-	: WHILE M '(' expression ')' M statement { 
+iteration_statement
+	: WHILE M '(' expression ')' M statement {
 		$$ = new statement();
 		convert2bool($4);
 		// M1 to go back to boolean again
@@ -1162,13 +1157,13 @@ jump_statement
 	| RETURN expression ';'{
 		$$ = new statement();
 
-			emit(_RETURN,$2->symp->name);	
+			emit(_RETURN,$2->symp->name);
 
 	}
 	;
 
 translation_unit
-	: external_declaration 
+	: external_declaration
 	| translation_unit external_declaration {
 
 	}
@@ -1185,10 +1180,10 @@ function_definition
 	}
 	| declaration_specifiers declarator CST compound_statement {
 //		table->tname = $2->name;
-		
+
 //		$2 = $2->update(FUNC, table);
-		table->parent = gTable;
-		changeTable (gTable);
+		table->parent = globalSymbolTable;
+		changeTable (globalSymbolTable);
 	}
 	;
 declaration_list

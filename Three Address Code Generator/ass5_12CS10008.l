@@ -3,38 +3,26 @@
 
 #include "y.tab.h"
 #include <math.h>
-void yyerror (char *);  /* prints grammar violation message */
-void count(void);
-void comment (void);
+void yyerror (char *);
+
 %}
 
 /* Regular Expression Definitions */
 
-D					[0-9]
-L 			 		[a-zA-Z_]
-ID 					{L}({L}|{D})*
-nonzero-digit		[1-9]
-E					([Ee][+-]?{D}+)
-IC 					{nonzero-digit}{D}*
-FC 					({FRC}{E}?)|({D}+{E})
-FRC 				(({D}+)?\.{D}+)|(({D}+)\.)
- 
-EC 					{ID}
-ESC_SEQ				\\['"?\\abfnrtv]
-cchar 				[^'\\\n]|{ESC_SEQ}
-CC 					'({cchar})+'
+Digit					            [0-9]
+identifier 				    [_a-zA-Z_][a-zA-Z0-9_]*
+nonzero-digit		       [1-9]
+E					            ([Ee][+-]?{Digit}+)
+integer-constant		[1-9][0-9]*|0
+floating-constant 		[-+]?[0-9]+[eE][-+]?[0-9]+|[-+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?|[-+]?[0-9]+\.([eE][-+]?[0-9]+)?
 
-schar 				[^"\\\n]|{ESC_SEQ}
-SC 					\"({schar}+)\"
-
-WS  				[ \t\v\n\f]
+character-constant		\'(\\.|[^\\'\n])*\'
+Comments				"/*"([^*]|\*+[^*/])*\*+"/"|"//"(.)*
+string-literal			\"(\\.|[^\\"\n])*\"
+whitespace				[ \t\v\r\f\n]
 %%
 
-"/*"			{ comment(); }
-"//".*  	   	{  /* consume //-comment */ }
 
-"0"             { 	yylval.intval = atoi(yytext);
-					return ZERO; }
 "break"         { return BREAK; }
 "case"          { return CASE; }
 "char"          { return CHAR; }
@@ -70,15 +58,15 @@ WS  				[ \t\v\n\f]
 
 "Matrix"        { return MATRIX;    }
 
-{SC} 			{ 	yylval.strval = yytext;
+{string-literal} 			{ 	yylval.strval = yytext;
 					return STRING_LITERAL; }
-{ID}			{	yylval.symp = table->lookup(yytext);
+{identifier}			{	yylval.symp = table->lookup(yytext);
 					return IDENTIFIER;  }
-{IC} 			{ 	yylval.intval = atoi(yytext);
+{integer-constant} 			{ 	yylval.intval = atoi(yytext);
 					return INT_CONSTANT; }
-{FC} 			{ 	yylval.strval = yytext;
-					return FLOAT_CONSTANT; }
-{CC} 			{ return CHAR_CONSTANT; }
+{floating-constant} 			{ 	yylval.strval = yytext;
+					                     return FLOAT_CONSTANT; }
+{character-constant} 			{ return CHAR_CONSTANT; }
 
 "["				{ return '['; }
 "]"				{ return ']'; }
@@ -133,26 +121,6 @@ WS  				[ \t\v\n\f]
 ","				{ return ','; }
 "#"				{ return '#'; }
 
-{WS}			{ /* whitespace separates tokens */ }
+{whitespace}			{ /* whitespace separates tokens */ }
+{Comments}        { ;}
 %%
-
-int column = 0;
-void count(void) {
-	int i;
-	for (i = 0; yytext[i] != '\0'; i++)
-		if (yytext[i] == '\n') column = 0;
-		else if (yytext[i] == '\t')
-			column += 8 - (column % 8);
-		else
-			column++;
-	ECHO;
-}
-void comment(void) {
-	char c, prev = 0;
-	while ((c = getchar()) != 0) {     /* (EOF maps to 0) */
-		if (c == '/' && prev == '*')
-			return;
-		prev = c;
-	}
-//	yyerror("unterminated comment");
-}
