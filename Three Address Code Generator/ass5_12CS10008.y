@@ -20,17 +20,17 @@
 	float floatval;
 	sym* symp;
 	expr* exp;
-	lint* nl;
+	list<int>* nl;
 	symtype* st;
 	statement* stat;
 	unary* A;
 	char uop;	//unary operator
 }
 
-%token TYPEDEF EXTERN STATIC AUTO REGISTER INLINE RESTRICT
+
 %token CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOLATILE VOID MATRIX
-%token BOOL COMPLEX IMAGINARY
-%token STRUCT UNION ENUM
+%token BOOL 
+
 %token BREAK CASE CONTINUE DEFAULT DO IF ELSE FOR GOTO WHILE SWITCH SIZEOF
 %token RETURN
 
@@ -40,7 +40,7 @@
 
 %token <strval> STRING_LITERAL
 %token <symp>IDENTIFIER  PUNCTUATORS COMMENT
-%token <intval>INT_CONSTANT 
+%token <intval>INT_CONSTANT ZERO
 	
 %token <strval> FLOAT_CONSTANT
 	ENU_CONSTANT 
@@ -130,6 +130,10 @@ constant
             $$->init=*new string($1);
            }
 	}
+    |ZERO
+       {$$ = gentemp(_INT, NumberToString($1));
+		emit(EQUAL, $$->name, $1);
+       }
 	| ENU_CONSTANT {	/* Ignored */
 	}
 	| CHAR_CONSTANT{
@@ -151,10 +155,9 @@ postfix_expression
 		
 		$$->symp = $1->symp;			// copy the base
 		$$->type = $1->type->ptr;		// type = type of element
-		$$->loc = gentemp(_INT);		// store computed address
-		
-		// New address = already computed + $3 * new width
-		if ($1->cat==_MATRIX) {		// if something already computed
+		$$->loc = new sym("",_INT);		// store computed address
+
+		if ($1->cat==_MATRIX) {		
 			sym* t = gentemp(_INT);
  			emit(MULT, t->name, $3->symp->name, tostr(4));
             sym* t1=gentemp(_INT);
@@ -169,30 +172,16 @@ postfix_expression
             emit(ADD, t5->name,t3->name, t4->name);
             sym* t6=gentemp(_INT);
             emit(ADD, t6->name,t5->name,tostr(8));          //t8=t7+t8
-             $$->loc->name=t6->name;
-            //emit(ARRL,$1->symp->name,t6->name
+            $$->loc->name=t6->name;
 
-			//emit (ADD, $$->loc->name, $1->loc->name, t->name);
 		}
  		else {
 	 		emit(MULT, $$->loc->name, $3->symp->name, NumberToString(sizeoftype($$->type)));
  		}
 
- 		// Mark that it contains array address and first time computation is done
-        //$$->type=_MATRIX;
 		$$->cat = _MATRIX;
         $$->symp->type->cat=_MATRIX;
 
-//		emit(ARREQ, $$->loc->name, $1->loc->name, t->name);
-/*
-		$$ = new unary();
-		$$->symp = $1->symp;
-		$$->type = $1->type->ptr;
-		sym* t = gentemp(_INT);
-		$$->loc = gentemp();
-		emit(MULT, t->name, $3->symp->name, NumberToString(sizeoftype($$->type)));
-		emit(ARREQ, $$->loc->name, $1->loc->name, t->name);
-*/
 	}
 	| postfix_expression '(' ')'
 	| postfix_expression '(' argument_expression_list ')' {
@@ -206,7 +195,7 @@ postfix_expression
 		$$ = new unary();
 
 		// copy $1 to $$
-        ///////////////////////////////////////
+
          if ($1->symp->type->cat==_MATRIX)
         {
             sym* t1=gentemp(_DOUBLE);
@@ -248,25 +237,11 @@ postfix_expression
 		emit (SUB, $1->symp->name, $1->symp->name, "1");
         }
 	}
-	| '(' type_name ')' '{' initializer_row_list '}' { /* Ignored */
-		$$ = new unary();
-		$$->symp = gentemp(_INT, "0");
-		$$->loc = gentemp(_INT, "0");
-	}
-	|  '(' type_name ')' '{' initializer_row_list ',' '}' { /* Ignored */
-		$$ = new unary();
-		$$->symp = gentemp(_INT, "0");
-		$$->loc = gentemp(_INT, "0");
-	}
+
     | postfix_expression TRANSPOSE{
             transRUN=true;
-            //int row_save=$1->symp->type->row;
-            //int column_save=$1->symp->type->column;
+
             sym* t=gentemp($1->type,"transpose");
-            //t->type->row=column_save;
-            //t->type->column=row_save;
-            //$1->symp->type->row=row_save;
-            //$1->symp->type->column=column_save;
             emit(TRANSOP,t->name,$1->symp->name);
             $$->symp=t;
         }
@@ -284,13 +259,13 @@ argument_expression_list
 	;
 
 unary_expression
-	: postfix_expression {
+	: postfix_expression 
+    {
 		$$ = $1;
-//		debug ($$->symp);
 	}
-	| INC_OP unary_expression {
-    
-         if ($2->symp->type->cat==_MATRIX)
+	| INC_OP unary_expression 
+    {
+        if ($2->symp->type->cat==_MATRIX)
         {
             sym* t1=gentemp(_DOUBLE);
             emit(ARRR,t1->name,$2->symp->name,$2->loc->name);
@@ -298,14 +273,10 @@ unary_expression
             emit(ARRL,$2->symp->name,$2->loc->name,t1->name);
    
         }
-
-		// Increment $1
         else
         {
 		    emit (ADD, $2->symp->name, $2->symp->name, "1");
         }
-
-		// Use the same value
 		$$ = $2;
 	}
 	| DEC_OP unary_expression {
@@ -329,53 +300,44 @@ unary_expression
 		$$ = new unary();
 		switch ($1) {
 			case '&':
-				$$->symp = gentemp(PTR);
-				$$->symp->type->ptr = $2->symp->type;
-                if ($2->symp->type->cat==_MATRIX)
-                    {
-                        $$->symp->type->ptr=new symtype(_DOUBLE);
-                        string array_name=$2->symp->name;
-                        string location=$2->loc->name;
-                        emit(EQUAL, $$->symp->name,"&"+array_name+"["+location+"]" );
-                    }
-                else 
-				    emit (ADDRESS, $$->symp->name, $2->symp->name);
-				break;
+				        $$->symp = gentemp(PTR);
+				        $$->symp->type->ptr = $2->symp->type;
+                        if ($2->symp->type->cat==_MATRIX)
+                            {
+                                $$->symp->type->ptr=new symtype(_DOUBLE);
+                                string array_name=$2->symp->name;
+                                string location=$2->loc->name;
+                                emit(EQUAL, $$->symp->name,"&"+array_name+"["+location+"]" );
+                            }
+                        else 
+				            emit (ADDRESS, $$->symp->name, $2->symp->name);
+				        break;
 			case '*':
-				debug ("got pointer");
-				$$->cat = PTR;
-				debug ($2->symp->name);
-				$$->loc = gentemp ($2->symp->type->ptr);
-				emit (PTRR, $$->loc->name, $2->symp->name);
-				$$->symp = $2->symp;
-				debug ("here pointer");
-				break;
+                        $$->cat = PTR;
+                        $$->loc = gentemp ($2->symp->type->ptr);
+				        emit (PTRR, $$->loc->name, $2->symp->name);
+				        $$->symp = $2->symp;
+				        break;
 			case '+':
-				$$ = $2;
-				break;
+				        $$ = $2;
+				        break;
 			case '-':
-				$$->symp = gentemp($2->symp->type->cat);
-				emit (UMINUS, $$->symp->name, $2->symp->name);
-				break;
+				        $$->symp = gentemp($2->symp->type->cat);
+				        emit (UMINUS, $$->symp->name, $2->symp->name);
+				        break;
 			case '~':
-				$$->symp = gentemp($2->symp->type->cat);
-				emit (BNOT, $$->symp->name, $2->symp->name);
-				break;
+				        $$->symp = gentemp($2->symp->type->cat);
+				        emit (BNOT, $$->symp->name, $2->symp->name);
+				        break;
 			case '!':
-				$$->symp = gentemp($2->symp->type->cat);
-				emit (LNOT, $$->symp->name, $2->symp->name);
-				break;
+				        $$->symp = gentemp($2->symp->type->cat);
+				        emit (LNOT, $$->symp->name, $2->symp->name);
+				        break;
 			default:
-				break;
+				        break;
 		}
 	}
-	| SIZEOF unary_expression {	/* Ignored */
-		$$ = $2;
-	}
-	| SIZEOF '(' type_name ')' {	/* Ignored */
-		$$->symp = gentemp(_INT, tostr(sizeoftype(new symtype (TYPE))));
-	}
-	;
+;
 
 unary_operator
 	: '&' {
@@ -402,15 +364,12 @@ cast_expression
 	: unary_expression  {
 		$$ = $1;
 	}
-	| '(' type_name ')' cast_expression  /* Ignored */
-	{$$ = $4;}
+
 	;
 
 multiplicative_expression
-	: cast_expression {
-		// Now the cast expression can't go to LHS of assignment_expression
-		// So we can safely store the rvalues of pointer and arrays in temporary
-		// We don't need to carry lvalues anymore
+	: cast_expression 
+        {
 		$$ = new expr();
 		if ($1->cat==_MATRIX) { // Array
 			
@@ -426,7 +385,6 @@ multiplicative_expression
                 {
                     //$$->symp = gentemp($1->type,"transpose");
                     $$->symp = $1->symp;
-                //emit(EQUAL,$$->symp->name, $1->symp->name);
                 }
 		}
 		else if ($1->cat==PTR) { // Pointer
@@ -550,7 +508,7 @@ relational_expression
 			$$->isbool = true;
 			$$->truelist = makelist (nextinstr());
 			$$->falselist = makelist (nextinstr()+1);
-			emit(LE, "", $1->symp->name, $3->symp->name);
+			emit(GE, "", $1->symp->name, $3->symp->name);
 			emit (GOTOOP, "");
 		}
 		else cout << "Type Error"<< endl;
@@ -684,11 +642,11 @@ M 	: %empty{	// To store the address of the next instruction for further use.
 	};
 
 N 	: %empty { 	// Non terminal to prevent fallthrough by emitting a goto
-		debug ("n");
+
 		$$  = new expr();
 		$$->nextlist = makelist(nextinstr());
 		emit (GOTOOP,"");
-		debug ("n2");
+
 	}
 
 conditional_expression
@@ -727,7 +685,6 @@ assignment_expression
 				        emit(ARRL, $1->symp->name, $1->loc->name, $3->symp->name);
                 else
                     {
-                        //cout<<"DEBUG"<<endl;
                         emit(EQUAL, $1->symp->name,$3->symp->name);
                         transRUN=false;
                     }	
@@ -778,26 +735,21 @@ declaration
 
 	}
 	| declaration_specifiers init_declarator_list ';' {
-		debug ("declaration");
+
 	}
 	;
 
 declaration_specifiers
-	: storage_class_specifier
-	| storage_class_specifier declaration_specifiers
-	| type_specifier
+	: 
+       type_specifier
 	| type_specifier declaration_specifiers
-	| type_qualifier
-	| type_qualifier declaration_specifiers
-	| function_specifier 
-	| function_specifier declaration_specifiers
-	//{printf("declaration_specifiers\n");}
+
+
 	;
 
 init_declarator_list
 	: init_declarator
 	| init_declarator_list ',' init_declarator {
-		debug("init_declarator_list");
 	}
 	;
 
@@ -806,25 +758,15 @@ init_declarator
 		$$ = $1;
 	}
 	| declarator '=' initializer {
-		debug ($1->name);
-		debug ($3->name);
-		debug ($3->init);
 
 		if ($3->init!="") $1->initialize($3->init);
         //if ($1->type->cat!=_MATRIX)
 		emit (EQUAL, $1->name, $3->name);
-        //cout<<"DEBUG"<<endl;
-		debug ("here init");
+
+
 	}
 	;
 
-storage_class_specifier
-	: EXTERN
-	| STATIC
-	| AUTO
-	| REGISTER
-	{printf("storage_class_specifier\n");}
-	;
 
 type_specifier
 	: VOID {
@@ -845,9 +787,7 @@ type_specifier
 	| SIGNED
 	| UNSIGNED
 	| BOOL
-	| COMPLEX
-	| IMAGINARY
-	| enum_specifier
+
     | MATRIX
         { TYPE=_MATRIX; }  
 	//{printf("type_specifier\n");}
@@ -855,47 +795,9 @@ type_specifier
 
 
 
-specifier_qualifier_list
-	: type_specifier specifier_qualifier_list
-	| type_specifier
-	| type_qualifier specifier_qualifier_list
-	| type_qualifier
-	//{printf("specifier_qualifier_list\n");}
-	;
 
 
-enum_specifier
-	: ENUM '{' enumerator_list '}'
-	| ENUM IDENTIFIER '{' enumerator_list '}'
-	| ENUM '{' enumerator_list ',' '}'
-	| ENUM IDENTIFIER '{' enumerator_list ',' '}'
-	| ENUM IDENTIFIER
-	//{printf("enum_specifier\n");}
-	;
 
-enumerator_list
-	: enumerator
-	| enumerator_list ',' enumerator
-	{printf("enumerator_list\n");}
-	;
-
-enumerator
-	: IDENTIFIER
-	| IDENTIFIER '=' constant_expression
-	{printf("enumerator\n");}
-	;
-
-type_qualifier /* Ignored */
-	: CONST
-	| VOLATILE
-	| RESTRICT
-	{printf("type_qualifier\n");}
-	;
-
-function_specifier /* Ignored */
-	: INLINE
-	{printf("function_specifier\n");}
-	;
 
 declarator
 	: pointer direct_declarator {
@@ -910,7 +812,7 @@ declarator
 direct_declarator
 	: IDENTIFIER {
 		$$ = $1->update(TYPE);
-		debug ("currsym: "<< $$->name);
+
 		currsym = $$;
 	}
 	| '(' declarator ')' {
@@ -945,10 +847,8 @@ direct_declarator
 			$$ = $1->update ($1->type);
 		}
 	}
-	| direct_declarator '[' STATIC type_qualifier_list assignment_expression ']'
-	| direct_declarator '[' STATIC assignment_expression ']'
-	| direct_declarator '[' type_qualifier_list '*' ']'
-	| direct_declarator '[' '*' ']'
+	| direct_declarator '['   assignment_expression ']'
+	| direct_declarator '['  '*' ']'
 	| direct_declarator '(' CST parameter_type_list ')' {
 		table->tname = $1->name;
 
@@ -961,8 +861,7 @@ direct_declarator
 
 		table->parent = gTable;
 		changeTable (gTable);				// Come back to globalsymbol table
-	
-		debug ("currsym: "<< $$->name);
+
 		currsym = $$;						
 	}
 	| direct_declarator '(' identifier_list ')' { /* Ignored */
@@ -980,8 +879,7 @@ direct_declarator
 	
 		table->parent = gTable;
 		changeTable (gTable);				// Come back to globalsymbol table
-	
-		debug ("currsym: "<< $$->name);
+
 		currsym = $$;
 	}
 	;
@@ -999,60 +897,50 @@ pointer
 	: '*' {
 		$$ = new symtype(PTR);
 	}
-	| '*' type_qualifier_list {} /* Ignored */
+
 	| '*' pointer {
 		$$ = new symtype(PTR, $2);
 	}
-	| '*' type_qualifier_list pointer /* Ignored */
-	{printf("pointer\n");}
+
+
 	;
 
-type_qualifier_list /* Ignored */
-	: type_qualifier
-	| type_qualifier_list type_qualifier
-	{printf("type_qualifier_list\n");}
-	;
+
 
 
 parameter_type_list
 	: parameter_list
 	| parameter_list ',' ELLIPSIS
-	{printf("parameter_type_list\n");}
+
 	;
 
 parameter_list
 	: parameter_declaration
-	| parameter_list ',' parameter_declaration {
-		debug("parameter_list");
-	}
+	| parameter_list ',' parameter_declaration 
 	;
 
 parameter_declaration
 	: declaration_specifiers declarator {
-		debug ("here");
 		$2->category = "param";
 	}
 	| declaration_specifiers
-	{printf("parameter_declaration\n");}
+
 	;
 
 identifier_list
 	: IDENTIFIER 
 	| identifier_list ',' IDENTIFIER
-	{printf("identifier_list\n");}
+
 	;
 
-type_name
-	: specifier_qualifier_list
-	{printf("type_name\n");}
-	;
+
 
 
 
 initializer_row_list: 
                 initializer_row
                 { $$=$1;    }
-            |   initializer_row ';' initializer_row
+            |   initializer_row_list ';' initializer_row
                 {   rowison=true;
                     $$=$1;
                     $$->init=$1->init+";"+$3->init;}
@@ -1065,7 +953,7 @@ initializer_row
         {
             $$=$2;
         }          
-	| initializer_row_list ',' initializer
+	| initializer_row ',' initializer
         {   
 
             $$=$1;
@@ -1079,11 +967,32 @@ initializer
 	}
 	| '{' empty_token initializer_row_list '}' 
         {
-              rowison=false;
+              
               $$=$3;
-              $$->init="{"+$3->init+"}";
-              sym* t=gentemp(_DOUBLE, $$->init);
-              $$->name=t->name;
+              string initial="{"+$3->init+"}";
+              $$->init=initial;
+              string rowS=$3->init;
+              rowison=false;
+               int ro=1,col=1;
+               bool notfound=true;
+              for(int i=0;i<rowS.size();i++)
+                {
+                    //cout<<rowS[i]<<endl;
+                    if (rowS[i]==','&& notfound)
+                        col++;
+                    else if(rowS[i]==';')
+                        {ro=ro+1;notfound=false;cout<<"HELLO "<<ro<<endl;}
+                    else    ;
+                }
+             //sym* t=gentemp(_DOUBLE, initial);
+              
+
+                symtype *t=new symtype(_MATRIX,NULL,0);
+                t->row=ro;
+                t->column=col;
+                cout<<t->row<<endl;
+                sym *t1= gentemp(t,$$->init,true);
+                $$->name=t1->name;;
         }
 
 	;
@@ -1092,43 +1001,44 @@ empty_token:    %empty  {rowison=true;}
 
 designation
 	: designator_list '='
-	{printf("designation\n");}
+
 	;
 
 designator_list
 	: designator
 	| designator_list designator
-	{printf("designator_list\n");}
+
+
 	;
 
 designator
 	: '[' constant_expression ']'
 	| '.' IDENTIFIER
-	{printf("designator\n");}
+
 	;
 
 statement
 	: labeled_statement /* Skipped */
 	| compound_statement {
 		$$ = $1;
-		debug("Compound Statement");
+
 	}
 	| expression_statement {
 		$$ = new statement();
 		$$->nextlist = $1->nextlist;
-		debug("Expression Statement");
+
 	}
 	| selection_statement {
 		$$ = $1;
-		debug("selection statement\n");
+
 	}
 	| iteration_statement {
 		$$ = $1;
-		debug("iteration statement");
+
 	}
 	| jump_statement {
 		$$ = $1;
-		debug("jump statement");
+
 	}
 	;
 
@@ -1149,44 +1059,21 @@ block_item_list
 	: block_item {
 		$$ = $1;		
 	}
-	| block_item_list M block_item {
-		$$ = $3;
-	/*	
-		debug ("M.instruction = " << $2);
-
-		if (gDebug) {
-			debug ("1 contains: ");
-			printlist($1->nextlist);
-		} 
-
-		if (gDebug) {
-			debug ("3 contains: ");
-			printlist($3->nextlist);
-		} 
-	*/
-		backpatch ($1->nextlist, $2);
-	//	debug ("backpatching 1 done");
-	}
+	| block_item_list M block_item 
+        {
+		    $$ = $3;
+		    backpatch ($1->nextlist, $2);
+        }
 	;
 
 block_item
 	: declaration { 
 		$$ = new statement();
-	/*	debug ("-------------------------------------------------");
-		debug ("declaration next instruction");
-		if (gDebug) {
-			printlist($$->nextlist);
-		} 
-	*/
+
 	}
 	| statement {
 		$$ = $1;
-	/*	debug ("-------------------------------------------------");
-		debug ("statement next instruction");
-		if (gDebug) {
-			printlist($$->nextlist);
-		} 
-	*/
+
 	}
 	;
 
@@ -1198,7 +1085,7 @@ expression_statement
 	;
 
 selection_statement
-	: IF '(' expression N ')' M statement N {
+	: IF '(' expression N')' M statement N {
 		backpatch ($4->nextlist, nextinstr());
 		convert2bool($3);
 		$$ = new statement();
@@ -1208,11 +1095,12 @@ selection_statement
 		
 	}
 	| IF '(' expression N ')' M statement N ELSE M statement {
-		backpatch ($4->nextlist, nextinstr());
+		backpatch ($8->nextlist, nextinstr());
 		convert2bool($3);
+        $$=new statement();
 		backpatch ($3->truelist, $6);
 		backpatch ($3->falselist, $10);
-		lint temp = merge ($7->nextlist, $8->nextlist);
+		list<int> temp = merge ($7->nextlist, $8->nextlist);
 		$$->nextlist = merge (temp, $11->nextlist);
 	}
 	| SWITCH '(' expression ')' statement /* Skipped */
@@ -1259,11 +1147,11 @@ iteration_statement
 		backpatch ($11->nextlist, $6);
 		emit (GOTOOP, tostr($6));
 		$$->nextlist = $5->falselist;
-	//	debug ("for done");
+
 	}
 	;
 
-jump_statement /* Ignored except return */
+jump_statement
 	: GOTO IDENTIFIER ';' {$$ = new statement();}
 	| CONTINUE ';' {$$ = new statement();}
 	| BREAK ';' {$$ = new statement();}
@@ -1273,10 +1161,8 @@ jump_statement /* Ignored except return */
 	}
 	| RETURN expression ';'{
 		$$ = new statement();
-	//	if (table->lookup("retVal")->type->cat==$2->symp->type->cat) {
-			emit(_RETURN,$2->symp->name);
-	//	}
-	//	else yyerror("Wrong return type\n");			
+
+			emit(_RETURN,$2->symp->name);	
 
 	}
 	;
@@ -1284,7 +1170,7 @@ jump_statement /* Ignored except return */
 translation_unit
 	: external_declaration 
 	| translation_unit external_declaration {
-//		if (gDebug) table->printall();
+
 	}
 	;
 
