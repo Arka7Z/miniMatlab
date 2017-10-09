@@ -3,12 +3,12 @@
 /************ Global variables *************/
 
 symbolTable* globalSymbolTable;					// Global Symbbol Table
-quads quadarray;						// Quads
-type_e TYPE;					// Stores latest type specifier
+quads quadArray;						// Quads
+typeEnum TYPE;					// Stores latest type specifier
 bool gDebug = false;			// Debug mode
 bool transRUN=false;
 symbolTable* table;					// Points to current symbol table
-sym* currsym; 					// points to latest function entry in symbol table
+sym* currentSymbol; 					// points to latest function entry in symbol table
 bool rowison=false;
 
 /* Singleton Design Pattern */
@@ -36,7 +36,7 @@ list<int> merge(list<int> &x, list <int> &y)
 	x.merge(y);
 	return y;
 }
-int sizeoftype (symtype* t){
+int sizeoftype (symbolType* t){
 
 	if(t->cat==_VOID)
 		return 0;
@@ -58,7 +58,7 @@ int sizeoftype (symtype* t){
 		}
 	}
 }
-string returnTypeString (const symtype* t){
+string returnTypeString (const symbolType* t){
 	if (t==NULL) return "null";
 
 	if(t->cat==_VOID)
@@ -79,7 +79,7 @@ string returnTypeString (const symtype* t){
 			return "type";
 
 }
-symtype::symtype(type_e cat, symtype* ptr, int width):
+symbolType::symbolType(typeEnum cat, symbolType* ptr, int width):
 	cat (cat),
 	ptr (ptr),
 	width (width) {};
@@ -106,10 +106,10 @@ sym* symbolTable::lookup (string name)
 			}
 }
 
-sym* gentemp (type_e t, string init)
+sym* gentemp (typeEnum t, string init)
 {
 			char n[20];
-			sprintf(n, "t%02d", table->tcount++);
+			sprintf(n, "t%02d", table->tempCount++);
 			sym* s = new sym (n, t);
 			s-> init = init;
 			s->category = "temp";
@@ -119,15 +119,15 @@ sym* gentemp (type_e t, string init)
 		   }
 		  else
 			{
-		        table->tcount--;
+		        table->tempCount--;
 		  }
 			return &table->table.back();
 }
 
-sym* gentemp (symtype* t, string init,bool decl)
+sym* gentemp (symbolType* t, string init,bool decl)
 {
 		    char n[20];
-		    sprintf(n, "t%02d", table->tcount++);
+		    sprintf(n, "t%02d", table->tempCount++);
 		    sym* s = new sym (n);
 
 		    if(init!="transpose")
@@ -167,13 +167,13 @@ sym* gentemp (symtype* t, string init,bool decl)
 		    		}
 		    else
 						{
-		        		table->tcount--;
+		        		table->tempCount--;
 		    		}
 		    if (init=="Mat_temp"||decl)
-		        		table->tcount++;
+		        		table->tempCount++;
 		    return &table->table.back();
 }
-symbolTable::symbolTable (string name): tname (name), tcount(0) {}
+symbolTable::symbolTable (string name): tableName (name), tempCount(0) {}
 
 void symbolTable::print(int all)
 {
@@ -188,12 +188,12 @@ void symbolTable::print(int all)
 						}
 					cout<<endl;
 					string symTab="Symbol Table :";
-					string name=this->tname;
+					string name=this->tableName;
 					cout << symTab << setfill (' ') << left << setw(35)  <<name ;
 					cout << right << setw(20) << "Parent: ";
 					string nullname="null";
 					if (this->parent!=NULL)
-						cout << this -> parent->tname;
+						cout << this -> parent->tableName;
 					else
 							cout <<nullname ;
 					printf("\n");
@@ -253,6 +253,7 @@ void symbolTable::computeOffsets()
 {
 			list<symbolTable*> tableList;
 			int off=0;
+
 			traverse2(table,it)
 			{
 				if (it==table.begin())
@@ -263,11 +264,11 @@ void symbolTable::computeOffsets()
 				else
 				{
 					it->offset = off;
-					int runOffset=it->offset;
+					//int runOffset=it->offset;
 					int currentSize=it->size;
-					off += runOffset ;
+					//off += runOffset ;
 					off +=  currentSize;
-		            //cout<<it->size<<" "<<off<<endl;
+		           // cout<<it->size<<" "<<off<<endl;
 				}
 				if (it->nest!=NULL)
 					tableList.push_back (it->nest);
@@ -284,9 +285,9 @@ sym* sym::linkst(symbolTable* t)
 	this->category = categ;
 }
 
-ostream& operator<<(ostream& outstream, const symtype* t)
+ostream& operator<<(ostream& outstream, const symbolType* t)
 {
-	// type_e cat = t->cat;
+	// typeEnum cat = t->cat;
 	string typeString = returnTypeString(t);
 	outstream << typeString;
 	return outstream;
@@ -294,7 +295,7 @@ ostream& operator<<(ostream& outstream, const symtype* t)
 ostream& operator<<(ostream& outstream, const sym* it)
 {
 				string name(it->name);
-				symtype* type=it->type;
+				symbolType* type=it->type;
 				string category(it->category);
 				string init(it->init);
 				typeof(it->size) size=it->size;
@@ -308,7 +309,7 @@ ostream& operator<<(ostream& outstream, const sym* it)
 				outstream << left;
 				if (it->nest != NULL)
 				{
-					outstream << it->nest->tname <<  endl;
+					outstream << it->nest->tableName <<  endl;
 				}
 				else
 				{
@@ -325,9 +326,9 @@ quad::quad (string result, int arg1, optype op, string arg2):
 	result (result), arg2(arg2), op (op) {
 		this ->arg1 = SSTR(arg1);
 	}
-sym::sym (string name, type_e t, symtype* ptr, int width): name(name)
+sym::sym (string name, typeEnum t, symbolType* ptr, int width): name(name)
 {
-			type = new symtype (symtype(t, ptr, width));
+			type = new symbolType (symbolType(t, ptr, width));
 			nest = NULL;
 			string nullstring="";
 			init = nullstring;
@@ -340,15 +341,15 @@ sym* sym::initialize (string initial)
 {
 	this->init = initial;
 }
-sym* sym::update(symtype* t)
+sym* sym::update(symbolType* t)
 {
 	this->type = t;
 	this -> size = sizeoftype(t);
 	return this;
 }
-sym* sym::update(type_e t)
+sym* sym::update(typeEnum t)
 {
-	this->type = new symtype(t);
+	this->type = new symbolType(t);
 	this->size = sizeoftype(this->type);
 	return this;
 }
@@ -385,7 +386,7 @@ void quad::print ()
 		case XOR:			cout << result << " = " << arg1 << " ^ " << arg2;				break;
 		case MODULUS:			cout << result << " = " << arg1 << " % " << arg2;				break;
 		case INOR:			cout << result << " = " << arg1 << " | " << arg2;				break;
-		case BAND:			cout << result << " = " << arg1 << " & " << arg2;				break;
+		case BINARYAND:			cout << result << " = " << arg1 << " & " << arg2;				break;
 		case ADD:			cout << result << " = " << arg1 << " + " << arg2;				break;
 		case MULT:			cout << result << " = " << arg1 << " * " << arg2;				break;
 		case SUB:			cout << result << " = " << arg1 << " - " << arg2;				break;
@@ -438,7 +439,7 @@ void backpatch (list <int> l, int addr)
 {
 	traverse2(l,it)
 		{
-			quadarray.array[*it].result = tostr(addr);
+			quadArray.array[*it].result = tostr(addr);
 		}
 
 }
@@ -485,11 +486,11 @@ void quads::print ()
 }
 void emit(optype op, string result, string arg1, string arg2)
 {
-	quadarray.array.push_back(*(new quad(result,arg1,op,arg2)));
+	quadArray.array.push_back(*(new quad(result,arg1,op,arg2)));
 
 }
 void emit(optype op, string result, int arg1, string arg2) {
-	quadarray.array.push_back(*(new quad(result,arg1,op,arg2)));
+	quadArray.array.push_back(*(new quad(result,arg1,op,arg2)));
 
 }
 string opCodeToString (int op) {
@@ -525,10 +526,10 @@ string opCodeToString (int op) {
 
 int nextinstr()
 {
-	int instr= quadarray.array.size();
+	int instr= quadArray.array.size();
 	return instr;
 }
-string NumberToString ( int Number )
+string int2string ( int Number )
 {
 
 	return SSTR(Number);
@@ -559,8 +560,8 @@ expr* convertfrombool (expr* e) 																								// Convert any expressio
 }
 bool typecheck(sym*& s1, sym*& s2)
 { 	// Check if the symbols have same type or not
-	symtype* type1 = s1->type;
-	symtype* type2 = s2->type;
+	symbolType* type1 = s1->type;
+	symbolType* type2 = s2->type;
 	if ( typecheck (type1, type2) )
 				return true;
 	else if (s1 = conv (s1, type2->cat) )
@@ -570,10 +571,10 @@ bool typecheck(sym*& s1, sym*& s2)
 	else
 				return false;
 }
-bool typecheck(symtype* t1, symtype* t2)																				// Check if the symbol types are same or not
+bool typecheck(symbolType* t1, symbolType* t2)																				// Check if the symbol types are same or not
 {
-			type_e cat1=t1->cat;
-			type_e cat2=t2->cat;
+			typeEnum cat1=t1->cat;
+			typeEnum cat2=t2->cat;
 			if (!(t1 == NULL && t2 == NULL) )
 			{
 				if (!(t2!=NULL))
@@ -588,7 +589,7 @@ bool typecheck(symtype* t1, symtype* t2)																				// Check if the symb
 			return true;
 }
 
-sym* conv (sym* s, type_e t)
+sym* conv (sym* s, typeEnum t)
 {
 	sym* temp = gentemp(t);
 	switch (s->type->cat)
@@ -661,7 +662,7 @@ int  main (int argc, char* argv[])
 	yyparse();
 	table->computeOffsets();
 	table->print(1);
-	quadarray.print();
+	quadArray.print();
 
 
 }

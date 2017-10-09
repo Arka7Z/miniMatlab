@@ -5,7 +5,7 @@
 	#include "ass5_12CS10008_translator.h"
 	extern	int yylex();
 	void yyerror(const char *s);
-	extern type_e TYPE;
+	extern typeEnum TYPE;
 	extern int gDebug;
     extern bool transRUN;
     extern bool rowison;
@@ -21,7 +21,7 @@
 	sym* symp;
 	expr* exp;
 	list<int>* nl;
-	symtype* st;
+	symbolType* st;
 	statement* stat;
 	unary* A;
 	char uop;	//unary operator
@@ -106,7 +106,7 @@ primary_expression
 		$$ = new expr();
 		$$->symp = gentemp(PTR, $1);
 		$$->symp->initialize($1);
-		$$->symp->type->ptr = new symtype(_CHAR);
+		$$->symp->type->ptr = new symbolType(_CHAR);
 	}
 	| '(' expression ')' {
 		$$ = $2;
@@ -115,7 +115,7 @@ primary_expression
 
 constant
 	: INT_CONSTANT {
-		$$ = gentemp(_INT, NumberToString($1));
+		$$ = gentemp(_INT, int2string($1));
 		emit(EQUAL, $$->name, $1);
 	}
 	| FLOAT_CONSTANT {
@@ -171,7 +171,7 @@ postfix_expression
 
 		}
  		else {
-	 		emit(MULT, $$->loc->name, $3->symp->name, NumberToString(sizeoftype($$->type)));
+	 		emit(MULT, $$->loc->name, $3->symp->name, int2string(sizeoftype($$->type)));
  		}
 
 		$$->cat = _MATRIX;
@@ -299,7 +299,7 @@ unary_expression
 				        $$->symp->type->ptr = $2->symp->type;
                         if ($2->symp->type->cat==_MATRIX)
                             {
-                                $$->symp->type->ptr=new symtype(_DOUBLE);
+                                $$->symp->type->ptr=new symbolType(_DOUBLE);
                                 string array_name=$2->symp->name;
                                 string location=$2->loc->name;
                                 emit(EQUAL, $$->symp->name,"&"+array_name+"["+location+"]" );
@@ -370,7 +370,7 @@ multiplicative_expression
 
             if (transRUN==false)
                {
-                symtype *t=new symtype($1->cat,NULL,0);
+                symbolType *t=new symbolType($1->cat,NULL,0);
                 t->row=$1->symp->type->row;
                 t->column=$1->symp->type->column;
                 $$->symp = gentemp(t,"Mat_temp");
@@ -554,7 +554,7 @@ and_expression
 			$$->isbool = false;
 
 			$$->symp = gentemp (_INT);
-			emit (BAND, $$->symp->name, $1->symp->name, $3->symp->name);
+			emit (BINARYAND, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
 		else cout << "Type Error"<< endl;
 	}
@@ -796,7 +796,7 @@ type_specifier
 
 declarator
 	: pointer direct_declarator {
-		symtype * t = $1;
+		symbolType * t = $1;
 		while (t->ptr !=NULL) t = t->ptr;
 		t->ptr = $2->type;
 		$$ = $2->update($1);
@@ -808,7 +808,7 @@ direct_declarator
 	: IDENTIFIER {
 		$$ = $1->update(TYPE);
 
-		currsym = $$;
+		currentSymbol = $$;
 	}
 	| '(' declarator ')' {
 		$$ = $2;
@@ -818,7 +818,7 @@ direct_declarator
         {
 
 			    int x = atoi($3->symp->init.c_str());
-			    symtype* s = new symtype(_MATRIX, $1->type, x);
+			    symbolType* s = new symbolType(_MATRIX, $1->type, x);
                 s->row=x;
                 s->column=atoi($6->symp->init.c_str());
 			    int y = sizeoftype(s);
@@ -826,26 +826,26 @@ direct_declarator
 
 	    }
 	| direct_declarator '[' ']' {
-		symtype * t = $1 -> type;
-		symtype * prev = NULL;
+		symbolType * t = $1 -> type;
+		symbolType * prev = NULL;
 		while (t->cat == ARR) {
 			prev = t;
 			t = t->ptr;
 		}
 		if (prev==NULL) {
-			symtype* s = new symtype(ARR, $1->type, 0);
+			symbolType* s = new symbolType(ARR, $1->type, 0);
 			int y = sizeoftype(s);
 			$$ = $1->update(s);
 		}
 		else {
-			prev->ptr =  new symtype(ARR, t, 0);
+			prev->ptr =  new symbolType(ARR, t, 0);
 			$$ = $1->update ($1->type);
 		}
 	}
 	| direct_declarator '['   assignment_expression ']'
 	| direct_declarator '['  '*' ']'
 	| direct_declarator '(' CST parameter_type_list ')' {
-		table->tname = $1->name;
+		table->tableName = $1->name;
 
 		if ($1->type->cat !=_VOID) {
 			sym *s = table->lookup("retVal");
@@ -857,13 +857,13 @@ direct_declarator
 		table->parent = globalSymbolTable;
 		changeTable (globalSymbolTable);				// Come back to globalsymbol table
 
-		currsym = $$;
+		currentSymbol = $$;
 	}
 	| direct_declarator '(' identifier_list ')' { /* Ignored */
 
 	}
 	| direct_declarator '(' CST ')' {
-		table->tname = $1->name;			// Update function symbol table name
+		table->tableName = $1->name;			// Update function symbol table name
 
 		if ($1->type->cat !=_VOID) {
 			sym *s = table->lookup("retVal");// Update type of return value
@@ -875,26 +875,26 @@ direct_declarator
 		table->parent = globalSymbolTable;
 		changeTable (globalSymbolTable);				// Come back to globalsymbol table
 
-		currsym = $$;
+		currentSymbol = $$;
 	}
 	;
 
 CST : %empty { // Used for changing to symbol table for a function
-		if (currsym->nest==NULL) changeTable(new symbolTable(""));	// Function symbol table doesn't already exist
+		if (currentSymbol->nest==NULL) changeTable(new symbolTable(""));	// Function symbol table doesn't already exist
 		else {
-			changeTable (currsym ->nest);						// Function symbol table already exists
-			emit (LABEL, table->tname);
+			changeTable (currentSymbol ->nest);						// Function symbol table already exists
+			emit (LABEL, table->tableName);
 		}
 	}
 	;
 
 pointer
 	: '*' {
-		$$ = new symtype(PTR);
+		$$ = new symbolType(PTR);
 	}
 
 	| '*' pointer {
-		$$ = new symtype(PTR, $2);
+		$$ = new symbolType(PTR, $2);
 	}
 
 
@@ -982,7 +982,7 @@ initializer
              //sym* t=gentemp(_DOUBLE, initial);
 
 
-                symtype *t=new symtype(_MATRIX,NULL,0);
+                symbolType *t=new symbolType(_MATRIX,NULL,0);
                 t->row=ro;
                 t->column=col;
                 cout<<t->row<<endl;
@@ -1179,7 +1179,7 @@ function_definition
 
 	}
 	| declaration_specifiers declarator CST compound_statement {
-//		table->tname = $2->name;
+//		table->tableName = $2->name;
 
 //		$2 = $2->update(FUNC, table);
 		table->parent = globalSymbolTable;
