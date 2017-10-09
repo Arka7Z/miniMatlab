@@ -18,13 +18,13 @@
 	int instr;
 	char* strval;
 	float floatval;
-	sym* symp;
-	expr* exp;
+	symb* symp;
+	Expression* exp;
 	list<int>* nl;
 	symbolType* st;
 	statement* stat;
-	unary* A;
-	char uop;	//unary operator
+	UnaryExpr* A;
+	char uop;	//UnaryExpr operator
 }
 
 
@@ -94,16 +94,16 @@
 %%
 primary_expression
 	: IDENTIFIER {
-		$$ = new expr();
+		$$ = new Expression();
 		$$->symp = $1;
 		$$->isbool = false;
 	}
 	| constant {
-		$$ = new expr();
+		$$ = new Expression();
 		$$->symp = $1;
 	}
 	| STRING_LITERAL {
-		$$ = new expr();
+		$$ = new Expression();
 		$$->symp = gentemp(PTR, $1);
 		$$->symp->initialize($1);
 		$$->symp->type->ptr = new symbolType(_CHAR);
@@ -126,7 +126,7 @@ constant
         }
         else
          {
-            $$=new sym(*new string($1),_DOUBLE);
+            $$=new symb(*new string($1),_DOUBLE);
             $$->init=*new string($1);
            }
 	}
@@ -139,33 +139,33 @@ constant
 
 postfix_expression
 	: primary_expression  {
-		$$ = new unary ();
+		$$ = new UnaryExpr ();
 		$$->symp = $1->symp;
 		$$->loc = $$->symp;
 		$$->type = $1->symp->type;
         $$->cat=$$->type->cat;
 	}
 	| postfix_expression '[' expression ']''['expression']' {
-		$$ = new unary();
+		$$ = new UnaryExpr();
 
 		$$->symp = $1->symp;			// copy the base
 		$$->type = $1->type->ptr;		// type = type of element
-		$$->loc = new sym("",_INT);		// store computed address
+		$$->loc = new symb("",_INT);		// store computed address
 
 		if ($1->cat==_MATRIX) {
-			sym* t = gentemp(_INT);
+			symb* t = gentemp(_INT);
  			emit(MULT, t->name, $3->symp->name, tostr(4));
-            sym* t1=gentemp(_INT);
+            symb* t1=gentemp(_INT);
             emit(ARRR, t1->name, $1->symp->name,tostr(4));
-            sym* t2=gentemp(_INT);
+            symb* t2=gentemp(_INT);
             emit(SUB,t2->name,t->name,tostr(4));
-            sym* t3=gentemp(_INT);
+            symb* t3=gentemp(_INT);
             emit(MULT, t3->name, t2->name, t1->name);     //t5=t4*T3
-            sym* t4=gentemp(_INT);
+            symb* t4=gentemp(_INT);
             emit(MULT, t4->name, $6->symp->name, tostr(4));  //t6=i*4
-            sym* t5=gentemp(_INT);
+            symb* t5=gentemp(_INT);
             emit(ADD, t5->name,t3->name, t4->name);
-            sym* t6=gentemp(_INT);
+            symb* t6=gentemp(_INT);
             emit(ADD, t6->name,t5->name,tostr(8));          //t8=t7+t8
             $$->loc->name=t6->name;
 
@@ -180,21 +180,21 @@ postfix_expression
 	}
 	| postfix_expression '(' ')'
 	| postfix_expression '(' argument_expression_list ')' {
-		$$ = new unary();
+		$$ = new UnaryExpr();
 		$$->symp = gentemp($1->type->cat);
 		emit(CALL, $$->symp->name, $1->symp->name, tostr($3));
 	}
 	| postfix_expression '.' IDENTIFIER /* Ignored */
 	| postfix_expression PTR_OP IDENTIFIER  /* Ignored */
 	| postfix_expression INC_OP {
-		$$ = new unary();
+		$$ = new UnaryExpr();
 
 		// copy $1 to $$
 
          if ($1->symp->type->cat==_MATRIX)
         {
-            sym* t1=gentemp(_DOUBLE);
-            sym* t2=gentemp(_DOUBLE);
+            symb* t1=gentemp(_DOUBLE);
+            symb* t2=gentemp(_DOUBLE);
             emit(ARRR,t1->name,$1->symp->name,$1->loc->name);
             emit(ARRR,t2->name,$1->symp->name,$1->loc->name);
             emit(ADD,t1->name,t1->name, "1");
@@ -211,11 +211,11 @@ postfix_expression
         }
 	}
 	| postfix_expression DEC_OP {
-		$$ = new unary();
+		$$ = new UnaryExpr();
          if ($1->symp->type->cat==_MATRIX)
         {
-            sym* t1=gentemp(_DOUBLE);
-            sym* t2=gentemp(_DOUBLE);
+            symb* t1=gentemp(_DOUBLE);
+            symb* t2=gentemp(_DOUBLE);
             emit(ARRR,t1->name,$1->symp->name,$1->loc->name);
             emit(ARRR,t2->name,$1->symp->name,$1->loc->name);
             emit(SUB,t1->name,t1->name, "1");
@@ -236,7 +236,7 @@ postfix_expression
     | postfix_expression TRANSPOSE{
             transRUN=true;
 
-            sym* t=gentemp($1->type,"transpose");
+            symb* t=gentemp($1->type,"transpose");
             emit(TRANSOP,t->name,$1->symp->name);
             $$->symp=t;
         }
@@ -262,7 +262,7 @@ unary_expression
     {
         if ($2->symp->type->cat==_MATRIX)
         {
-            sym* t1=gentemp(_DOUBLE);
+            symb* t1=gentemp(_DOUBLE);
             emit(ARRR,t1->name,$2->symp->name,$2->loc->name);
             emit(ADD,t1->name,t1->name, "1");
             emit(ARRL,$2->symp->name,$2->loc->name,t1->name);
@@ -278,7 +278,7 @@ unary_expression
 
          if ($2->symp->type->cat==_MATRIX)
         {
-            sym* t1=gentemp(_DOUBLE);
+            symb* t1=gentemp(_DOUBLE);
             emit(ARRR,t1->name,$2->symp->name,$2->loc->name);
             emit(SUB,t1->name,t1->name, "1");
             emit(ARRL,$2->symp->name,$2->loc->name,t1->name);
@@ -292,7 +292,7 @@ unary_expression
 		$$ = $2;
 	}
 	| unary_operator cast_expression {
-		$$ = new unary();
+		$$ = new UnaryExpr();
 		switch ($1) {
 			case '&':
 				        $$->symp = gentemp(PTR);
@@ -365,7 +365,7 @@ cast_expression
 multiplicative_expression
 	: cast_expression
         {
-		$$ = new expr();
+		$$ = new Expression();
 		if ($1->cat==_MATRIX) { // Array
 
             if (transRUN==false)
@@ -391,7 +391,7 @@ multiplicative_expression
 	}
 	| multiplicative_expression '*' cast_expression {
 		if (typecheck ($1->symp, $3->symp) ) {
-			$$ = new expr();
+			$$ = new Expression();
 			$$->symp = gentemp($1->symp->type->cat);
 			emit (MULT, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
@@ -399,7 +399,7 @@ multiplicative_expression
 	}
 	| multiplicative_expression '/' cast_expression{
 		if (typecheck ($1->symp, $3->symp) ) {
-			$$ = new expr();
+			$$ = new Expression();
 			$$->symp = gentemp($1->symp->type->cat);
 			emit (DIVIDE, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
@@ -407,7 +407,7 @@ multiplicative_expression
 	}
 	| multiplicative_expression '%' cast_expression {
 		if (typecheck ($1->symp, $3->symp) ) {
-			$$ = new expr();
+			$$ = new Expression();
 			$$->symp = gentemp($1->symp->type->cat);
 			emit (MODULUS, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
@@ -419,7 +419,7 @@ additive_expression
 	: multiplicative_expression {$$ = $1;}
 	| additive_expression '+' multiplicative_expression {
 		if (typecheck($1->symp, $3->symp)) {
-			$$ = new expr();
+			$$ = new Expression();
 			$$->symp = gentemp($1->symp->type->cat);
 			emit (ADD, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
@@ -427,7 +427,7 @@ additive_expression
 	}
 	| additive_expression '-' multiplicative_expression {
 		if (typecheck($1->symp, $3->symp)) {
-			$$ = new expr();
+			$$ = new Expression();
 			$$->symp = gentemp($1->symp->type->cat);
 			emit (SUB, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
@@ -439,7 +439,7 @@ shift_expression
 	: additive_expression {$$ = $1;}
 	| shift_expression LEFT_OP additive_expression {
 		if ($3->symp->type->cat == _INT) {
-			$$ = new expr();
+			$$ = new Expression();
 			$$->symp = gentemp (_INT);
 			emit (LEFTSHIFT, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
@@ -447,7 +447,7 @@ shift_expression
 	}
 	| shift_expression RIGHT_OP additive_expression {
 		if ($3->symp->type->cat == _INT) {
-			$$ = new expr();
+			$$ = new Expression();
 			$$->symp = gentemp (_INT);
 			emit (RIGHTSHIFT, $$->symp->name, $1->symp->name, $3->symp->name);
 		}
@@ -460,7 +460,7 @@ relational_expression
 	| relational_expression '<' shift_expression {
 		if (typecheck ($1->symp, $3->symp) ) {
 			// New bool
-			$$ = new expr();
+			$$ = new Expression();
 			$$->isbool = true;
 
 			$$->truelist = makelist (nextinstr());
@@ -473,7 +473,7 @@ relational_expression
 	| relational_expression '>' shift_expression {
 		if (typecheck ($1->symp, $3->symp) ) {
 			// New bool
-			$$ = new expr();
+			$$ = new Expression();
 			$$->isbool = true;
 
 			$$->truelist = makelist (nextinstr());
@@ -486,7 +486,7 @@ relational_expression
 	| relational_expression LE_OP shift_expression {
 		if (typecheck ($1->symp, $3->symp) ) {
 			// New bool
-			$$ = new expr();
+			$$ = new Expression();
 			$$->isbool = true;
 
 			$$->truelist = makelist (nextinstr());
@@ -499,7 +499,7 @@ relational_expression
 	| relational_expression GE_OP shift_expression {
 		if (typecheck ($1->symp, $3->symp) ) {
 			// New bool
-			$$ = new expr();
+			$$ = new Expression();
 			$$->isbool = true;
 			$$->truelist = makelist (nextinstr());
 			$$->falselist = makelist (nextinstr()+1);
@@ -518,7 +518,7 @@ equality_expression
 			convertfrombool ($1);
 			convertfrombool ($3);
 
-			$$ = new expr();
+			$$ = new Expression();
 			$$->isbool = true;
 
 			$$->truelist = makelist (nextinstr());
@@ -534,7 +534,7 @@ equality_expression
 			convertfrombool ($1);
 			convertfrombool ($3);
 
-			$$ = new expr();
+			$$ = new Expression();
 			$$->isbool = true;
 
 			$$->truelist = makelist (nextinstr());
@@ -550,7 +550,7 @@ and_expression
 	: equality_expression {$$ = $1;}
 	| and_expression '&' equality_expression {
 		if (typecheck ($1->symp, $3->symp) ) {
-			$$ = new expr();
+			$$ = new Expression();
 			$$->isbool = false;
 
 			$$->symp = gentemp (_INT);
@@ -568,7 +568,7 @@ exclusive_or_expression
 			convertfrombool ($1);
 			convertfrombool ($3);
 
-			$$ = new expr();
+			$$ = new Expression();
 			$$->isbool = false;
 
 			$$->symp = gentemp (_INT);
@@ -586,7 +586,7 @@ inclusive_or_expression
 			convertfrombool ($1);
 			convertfrombool ($3);
 
-			$$ = new expr();
+			$$ = new Expression();
 			$$->isbool = false;
 
 			$$->symp = gentemp (_INT);
@@ -605,7 +605,7 @@ logical_and_expression
 		backpatch($2->nextlist, nextinstr());
 		convert2bool($1);
 
-		$$ = new expr();
+		$$ = new Expression();
 		$$->isbool = true;
 
 		backpatch($1->truelist, $4);
@@ -623,7 +623,7 @@ logical_or_expression
 		backpatch($2->nextlist, nextinstr());
 		convert2bool($1);
 
-		$$ = new expr();
+		$$ = new Expression();
 		$$->isbool = true;
 
 		backpatch ($$->falselist, $4);
@@ -638,7 +638,7 @@ M 	: %empty{	// To store the address of the next instruction for further use.
 
 N 	: %empty { 	// Non terminal to prevent fallthrough by emitting a goto
 
-		$$  = new expr();
+		$$  = new Expression();
 		$$->nextlist = makelist(nextinstr());
 		emit (GOTOOP,"");
 
@@ -848,7 +848,7 @@ direct_declarator
 		table->tableName = $1->name;
 
 		if ($1->type->cat !=_VOID) {
-			sym *s = table->lookup("retVal");
+			symb *s = table->lookup("retVal");
 			s->update($1->type);
 		}
 
@@ -866,7 +866,7 @@ direct_declarator
 		table->tableName = $1->name;			// Update function symbol table name
 
 		if ($1->type->cat !=_VOID) {
-			sym *s = table->lookup("retVal");// Update type of return value
+			symb *s = table->lookup("retVal");// Update type of return value
 			s->update($1->type);
 		}
 
@@ -979,14 +979,14 @@ initializer
                         {ro=ro+1;notfound=false;cout<<"HELLO "<<ro<<endl;}
                     else    ;
                 }
-             //sym* t=gentemp(_DOUBLE, initial);
+             //symb* t=gentemp(_DOUBLE, initial);
 
 
                 symbolType *t=new symbolType(_MATRIX,NULL,0);
                 t->row=ro;
                 t->column=col;
                 cout<<t->row<<endl;
-                sym *t1= gentemp(t,$$->init,true);
+                symb *t1= gentemp(t,$$->init,true);
                 $$->name=t1->name;;
         }
 
@@ -1073,7 +1073,7 @@ block_item
 	;
 
 expression_statement
-	: ';' {	$$ = new expr();}
+	: ';' {	$$ = new Expression();}
 	| expression ';' {
 		$$ = $1;
 	}

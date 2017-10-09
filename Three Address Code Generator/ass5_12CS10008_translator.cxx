@@ -8,7 +8,7 @@ typeEnum TYPE;					// Stores latest type specifier
 bool gDebug = false;			// Debug mode
 bool transRUN=false;
 symbolTable* table;					// Points to current symbol table
-sym* currentSymbol; 					// points to latest function entry in symbol table
+symb* currentSymbol; 					// points to latest function entry in symbol table
 bool rowison=false;
 
 /* Singleton Design Pattern */
@@ -84,10 +84,10 @@ symbolType::symbolType(typeEnum cat, symbolType* ptr, int width):
 	ptr (ptr),
 	width (width) {};
 
-sym* symbolTable::lookup (string name)
+symb* symbolTable::lookup (string name)
 {
-			sym* s;
-			list <sym>::iterator it;
+			symb* s;
+			list <symb>::iterator it;
 			traverse(table,it)
 			{
 				if (it->name == name )
@@ -99,18 +99,18 @@ sym* symbolTable::lookup (string name)
 			}
 			else
 			{
-					s =  new sym (name);
+					s =  new symb (name);
 					s->category = "local";
 					table.push_back (*s);
 					return &table.back();
 			}
 }
 
-sym* gentemp (typeEnum t, string init)
+symb* gentemp (typeEnum t, string init)
 {
 			char n[20];
 			sprintf(n, "t%02d", table->tempCount++);
-			sym* s = new sym (n, t);
+			symb* s = new symb (n, t);
 			s-> init = init;
 			s->category = "temp";
 			if(t!=_MATRIX )
@@ -124,11 +124,11 @@ sym* gentemp (typeEnum t, string init)
 			return &table->table.back();
 }
 
-sym* gentemp (symbolType* t, string init,bool decl)
+symb* gentemp (symbolType* t, string init,bool decl)
 {
 		    char n[20];
 		    sprintf(n, "t%02d", table->tempCount++);
-		    sym* s = new sym (n);
+		    symb* s = new symb (n);
 
 		    if(init!="transpose")
 		       { s-> init = init;
@@ -278,7 +278,7 @@ void symbolTable::computeOffsets()
 			    (*iterator)->computeOffsets();
 			}
 }
-sym* sym::linkst(symbolTable* t)
+symb* symb::linkst(symbolTable* t)
 {
 	this->nest = t;
 	string categ("function");
@@ -292,7 +292,7 @@ ostream& operator<<(ostream& outstream, const symbolType* t)
 	outstream << typeString;
 	return outstream;
 }
-ostream& operator<<(ostream& outstream, const sym* it)
+ostream& operator<<(ostream& outstream, const symb* it)
 {
 				string name(it->name);
 				symbolType* type=it->type;
@@ -326,7 +326,7 @@ quad::quad (string result, int arg1, optype op, string arg2):
 	result (result), arg2(arg2), op (op) {
 		this ->arg1 = SSTR(arg1);
 	}
-sym::sym (string name, typeEnum t, symbolType* ptr, int width): name(name)
+symb::symb (string name, typeEnum t, symbolType* ptr, int width): name(name)
 {
 			type = new symbolType (symbolType(t, ptr, width));
 			nest = NULL;
@@ -337,17 +337,17 @@ sym::sym (string name, typeEnum t, symbolType* ptr, int width): name(name)
 			offset = zero;
 			size = sizeoftype(type);
 }
-sym* sym::initialize (string initial)
+symb* symb::initialize (string initial)
 {
 	this->init = initial;
 }
-sym* sym::update(symbolType* t)
+symb* symb::update(symbolType* t)
 {
 	this->type = t;
 	this -> size = sizeoftype(t);
 	return this;
 }
-sym* sym::update(typeEnum t)
+symb* symb::update(typeEnum t)
 {
 	this->type = new symbolType(t);
 	this->size = sizeoftype(this->type);
@@ -359,7 +359,7 @@ void quad::update (int addr) {	// Used for backpatching address
 void quad::print ()
 {
 	switch(op) {
-		//Unary Operators
+		//UnaryExpr Operators
 		case ADDRESS:		cout << result << " = &" << arg1;				break;
 		case TRANSOP:       cout<<result<<"="<<arg1<<" .'";                      break;
 		case BNOT:			cout << result 	<< " = ~" << arg1;				break;
@@ -495,7 +495,7 @@ void emit(optype op, string result, int arg1, string arg2) {
 }
 string opCodeToString (int op) {
 	switch(op) {
-		//Unary Operators
+		//UnaryExpr Operators
 		case ADDRESS:			return " &";
 		case PTRR:				return " *R";
 		case LNOT:				return " !";
@@ -534,7 +534,7 @@ string int2string ( int Number )
 
 	return SSTR(Number);
 }
-expr* convert2bool (expr* e) 															// Convert any expression to bool
+Expression* convert2bool (Expression* e) 															// Convert any expression to bool
 {
 	if (!e->isbool)
 	{
@@ -545,7 +545,7 @@ expr* convert2bool (expr* e) 															// Convert any expression to bool
 		emit (GOTOOP, nullstring);
 	}
 }
-expr* convertfrombool (expr* e) 																								// Convert any expression to bool
+Expression* convertfrombool (Expression* e) 																								// Convert any expression to bool
 {
 			if (e->isbool)
 			{
@@ -558,7 +558,7 @@ expr* convertfrombool (expr* e) 																								// Convert any expressio
 					emit (EQUAL, expression_name, "false");
 			}
 }
-bool typecheck(sym*& s1, sym*& s2)
+bool typecheck(symb*& s1, symb*& s2)
 { 	// Check if the symbols have same type or not
 	symbolType* type1 = s1->type;
 	symbolType* type2 = s2->type;
@@ -589,9 +589,9 @@ bool typecheck(symbolType* t1, symbolType* t2)																				// Check if th
 			return true;
 }
 
-sym* conv (sym* s, typeEnum t)
+symb* conv (symb* s, typeEnum t)
 {
-	sym* temp = gentemp(t);
+	symb* temp = gentemp(t);
 	switch (s->type->cat)
 	{
 					case _INT:

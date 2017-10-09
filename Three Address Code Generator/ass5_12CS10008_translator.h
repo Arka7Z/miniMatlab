@@ -18,11 +18,11 @@ using namespace std;
 
 // /********* Forward Declarations ************/
 //
-// class sym; // Entry in a symbol table
-// class symbolTable; // Symbol Table
-// class quad; // Entry in quad array
-// class quads; // All Quads
-// class symbolType; // Type of a symbol in symbol table
+class symb; // Entry in a symbol table
+class symbolTable; // Symbol Table
+class quad; // Entry in quad array
+class quads; // All Quads
+class symbolType; // Type of a symbol in symbol table
 
 /************** Enum types *****************/
 
@@ -45,7 +45,7 @@ enum optype {
         RIGHTSHIFT,
         LEFTSHIFT,
         MODULUS,
-        // Unary Operators
+        // UnaryExpr Operators
         UMINUS,
         UPLUS,
         ADDRESS,
@@ -93,7 +93,7 @@ class symbolType { // Type of an element in symbol table
                 const symbolType);
 };
 
-class sym { // Row in a Symbol Table
+class symb { // Row in a Symbol Table
         public:
                 string name; // Name of symbol
         symbolType * type; // Type of Symbol
@@ -104,24 +104,24 @@ class sym { // Row in a Symbol Table
         int offset; // Offset of symbol computed at the end
         symbolTable * nest; // Pointer to nested symbol table
 
-        sym(string, typeEnum t = _INT, symbolType * ptr = NULL, int width = 0);
-        sym * update(symbolType * t); // Update using type object and nested table pointer
-        sym * update(typeEnum t); // Update using raw type and nested table pointer
-        sym * initialize(string);
+        symb(string, typeEnum t = _INT, symbolType * ptr = NULL, int width = 0);
+        symb * update(symbolType * t); // Update using type object and nested table pointer
+        symb * update(typeEnum t); // Update using raw type and nested table pointer
+        symb * initialize(string);
         friend ostream & operator << (ostream & ,
-                const sym * );
-        sym * linkst(symbolTable * t);
+                const symb * );
+        symb * linkst(symbolTable * t);
 };
 
 class symbolTable { // Symbol Table
         public:
                 string tableName; // Name of Table
         int tempCount; // Count of temporary variables
-        list <sym> table; // The table of symbols
-        symbolTable * parent;
+        list <symb> table; // The table of symbols
+        symbolTable* parent;
 
         symbolTable(string name = "");
-        sym * lookup(string name); // Lookup for a symbol in symbol table
+        symb * lookup(string name); // Lookup for a symbol in symbol table
         void print(int all = 0); // Print the symbol table
         void computeOffsets(); // Compute offset of the whole symbol table recursively
 };
@@ -161,8 +161,8 @@ class Singleton { // Global Symbol Table is Singleton Object
 
 /*********** Function Declarations *********/
 
-sym * gentemp(typeEnum t = _INT, string init = ""); // Generate a temporary variable and insert it in symbol table
-sym * gentemp(symbolType * t, string init = "", bool decl = false); // Generate a temporary variable and insert it in symbol table
+symb * gentemp(typeEnum t = _INT, string init = ""); // Generate a temporary variable and insert it in symbol table
+symb * gentemp(symbolType * t, string init = "", bool decl = false); // Generate a temporary variable and insert it in symbol table
 
 void backpatch(list < int > , int);
 void emit(optype opL, string result, string arg1 = "", string arg2 = "");
@@ -175,8 +175,8 @@ int sizeoftype(symbolType * ); // Calculate size of any type
 string returnTypeString(const symbolType * ); // For printing type structure
 string opCodeToString(int);
 
-sym * conv(sym * , typeEnum); // Convert symbol to different type
-bool typecheck(sym * & s1, sym * & s2); // Checks if two symbbol table entries have same type
+symb * conv(symb * , typeEnum); // Convert symbol to different type
+bool typecheck(symb * & s1, symb * & s2); // Checks if two symbbol table entries have same type
 bool typecheck(symbolType * s1, symbolType * s2); // Check if the type objects are equivalent
 
 int nextinstr(); // Returns the address of the next instruction
@@ -189,32 +189,31 @@ void changeTable(symbolTable * newtable);
 extern symbolTable * table; // Current Symbol Table
 extern symbolTable * globalSymbolTable; // Global Symbol Table
 extern quads quadArray; // Quads
-extern sym * currentSymbol; // Pointer to just encountered symbol
+extern symb * currentSymbol; // Pointer to just encountered symbol
 
 /** Attributes/Global for Boolean Expression***/
 
-struct expr {
+struct Expression {
         bool isbool; // Boolean variable that stores if the expression is bool
 
         // Valid for non-bool type
-        sym * symp; // Pointer to the symbol table entry
+        symb * symp; // Pointer to the symbol table entry
 
         // Valid for bool type
         list < int > truelist; // Truelist valid for boolean
         list < int > falselist; // Falselist valid for boolean expressions
 
         // Valid for statement expression
-        list < int > nextlist;
-};
+        list < int > nextlist;};
 
-struct statement {
-        list < int > nextlist; // Nextlist for statement
-};
+struct statement {                      // Nextlist for statement
+        list < int > nextlist; };
 
-struct unary {
+struct UnaryExpr
+{       
         typeEnum cat;
-        sym * loc; // Temporary used for computing array address
-        sym * symp; // Pointer to symbol table
+        symb * loc; // Temporary used for computing array address
+        symb * symp; // Pointer to symbol table
         symbolType * type; // type of the subarray generated
 };
 
@@ -222,10 +221,9 @@ struct unary {
 template < typename T > string tostr(const T & t) {
         ostringstream outstream;
         outstream << t;
-        return outstream.str();
-}
+        return outstream.str();}
 
-expr * convert2bool(expr * ); // convert any expression to bool
-expr * convertfrombool(expr * ); // convert bool to expression
+Expression * convert2bool(Expression * ); // convert any expression to bool
+Expression * convertfrombool(Expression * ); // convert bool to expression
 
 #endif
