@@ -14,8 +14,9 @@
 extern char * yytext;
 extern int yyparse();
 
-using namespace std;
 
+using namespace std;
+typedef list< int > li;
 // /********* Forward Declarations ************/
 //
 class symb; // Entry in a symbol table
@@ -26,13 +27,13 @@ class symbolType; // Type of a symbol in symbol table
 
 /************** Enum types *****************/
 
-enum optype {
+enum opTypeEnum {
         EQUAL,
         // Relational Operators
         LT,
         GreaterThan,
         LE,
-        GE,
+        GREATERTHANEQ,
         EQOP,
         NEOP,
         GOTOOP,
@@ -46,17 +47,17 @@ enum optype {
         LEFTSHIFT,
         MODULUS,
         // UnaryExpr Operators
-        UMINUS,
+        UNARYMINUS,
         UPLUS,
         ADDRESS,
         RIGHT_POINTER,
-        BNOT,
+        BINARYNOT,
         LNOT,
         TRANSOP,
         // Bit Operators
         BINARYAND,
         XOR,
-        INOR,
+        INCLUSIVEOR,
         // PTR Assign
         PTRL,
         PTRR,
@@ -89,13 +90,22 @@ class symbolType { // Type of an element in symbol table
         int column, row;
         symbolType * ptr; // Array -> array of ptr type; pointer-> pointer to ptr type
 
-        friend ostream & operator << (ostream & ,
-                const symbolType);
+        friend ostream & operator << (ostream & ,const symbolType);
+        int getWidth();
+        int getColumn();
+        int getRow();
+        symbolType * getPtr();
+        typeEnum getCat();
+        void setWidth(int width);
+        void setColumn(int column);
+        void setRow(int row);
+        void setCat(typeEnum cat);
+        void setPtr(symbolType* ptr);
 };
 
 class symb { // Row in a Symbol Table
         public:
-                string name; // Name of symbol
+
         symbolType * type; // Type of Symbol
         string init; // Symbol initialisation
         string category; // local, temp or global
@@ -103,14 +113,27 @@ class symb { // Row in a Symbol Table
         int row, column;
         int offset; // Offset of symbol computed at the end
         symbolTable * nest; // Pointer to nested symbol table
+          string name; // Name of symbol
+        symb * initialise(string initialVal);
+        symb * initialize(string initialVal);
+        symb(string, typeEnum type_e = _INT, symbolType * ptr = NULL, int width = 0);
+        symb * update(symbolType * temp); // Update using type object and nested table pointer
+        symb * update(typeEnum type_e); // Update using raw type and nested table pointer
 
-        symb(string, typeEnum t = _INT, symbolType * ptr = NULL, int width = 0);
-        symb * update(symbolType * t); // Update using type object and nested table pointer
-        symb * update(typeEnum t); // Update using raw type and nested table pointer
-        symb * initialize(string);
         friend ostream & operator << (ostream & ,
                 const symb * );
         symb * linkst(symbolTable * t);
+        string getName();
+        string getInit();
+        string getCategory();
+        int getOffset();
+        symbolTable * getNest();
+        symbolType * getType();
+        void setName(string name);
+        void setInit(string init);
+        void setCategory(string category);
+        void setOffset(int offset);
+        void setNest(symbolTable * nest);
 };
 
 class symbolTable { // Symbol Table
@@ -124,19 +147,39 @@ class symbolTable { // Symbol Table
         symb * lookup(string name); // Lookup for a symbol in symbol table
         void print(int all = 0); // Print the symbol table
         void computeOffsets(); // Compute offset of the whole symbol table recursively
+        //
+        string getTableName();
+        int getTempCount();
+        list<symb> getTable();
+        symbolTable * getParent();
+        void setTableName(string name);
+        void setTempCount(int count);
+        void setTable(list<symb> table);
+        void setParent(symbolTable* parent);
 };
 
 class quad { // Individual Quad
         public:
-                optype op; // Operator
-        string result; // Result
-        string arg1; // Argument 1
-        string arg2; // Argument 2
 
+        string argument1; // Argument 1
+        string argument2; // Argument 2
+        string result; // Result
+        opTypeEnum op; // Operator
+
+
+        void update(int address); // Used for backpatching address
         void print(); // Print Quads
-        void update(int addr); // Used for backpatching address
-        quad(string result, string arg1, optype op = EQUAL, string arg2 = "");
-        quad(string result, int arg1, optype op = EQUAL, string arg2 = "");
+        quad(string result, int argument1, opTypeEnum op = EQUAL, string argument2 = "");
+        quad(string result, string argument1, opTypeEnum op = EQUAL, string argument2 = "");
+        // Getter and Setter Methods
+        opTypeEnum getOpCode();
+        string getResult();
+        string getArgument1();
+        string getArgument2();
+        void  setOpCode(opTypeEnum opcode);
+        void setResult(string Result);
+        void setArgument1(string argument1);
+        void setArgument2(string argument2);
 };
 
 class quads { // Quad Array
@@ -149,81 +192,126 @@ class quads { // Quad Array
         }
         void print(); // Print all the quads
         void printtab(); // Print quads in tabular form
+        vector<quad> getArray();
+        void setArray(vector<quad> v);
 };
 
-class Singleton { // Global Symbol Table is Singleton Object
-        public:
-                static Singleton * GetInstance();
-        private:
-                Singleton();
-        static Singleton * pointerToSingleton; // singleton instance
-};
+// class Singleton { // Global Symbol Table is Singleton Object
+//         public:
+//                 static Singleton * GetInstance();
+//         private:
+//                 Singleton();
+//         static Singleton * pointerToSingleton; // singleton instance
+// };
 
 /*********** Function Declarations *********/
-
+void emit(opTypeEnum op, string result, int argument1, string argument2 = "");
 symb * gentemp(typeEnum t = _INT, string init = ""); // Generate a temporary variable and insert it in symbol table
 symb * gentemp(symbolType * t, string init = "", bool decl = false); // Generate a temporary variable and insert it in symbol table
+li merge(li & , li &); // Merge two lists
+li merge(li &, li &, li&);
+void backpatch(li List , int instr);
+void emit(opTypeEnum opL, string result, string argument1 = "", string argument2 = "");
 
-void backpatch(list < int > , int);
-void emit(optype opL, string result, string arg1 = "", string arg2 = "");
-void emit(optype op, string result, int arg1, string arg2 = "");
 
-list < int > makelist(int); // Make a new list contaninig an integer
-list < int > merge(list < int > & , list < int > & ); // Merge two lists
+li makelist(int); // Make a new list contaninig an integer
 
-int sizeoftype(symbolType * ); // Calculate size of any type
+
+string int2string(int); // Converts a number to string mainly used for storing numbers
 string returnTypeString(const symbolType * ); // For printing type structure
 string opCodeToString(int);
+int calculateSizeOfType(symbolType * symp); // Calculate size of any type
+symb * conv(symb * symp, typeEnum type_e); // Convert symbol to different type
 
-symb * conv(symb * , typeEnum); // Convert symbol to different type
-bool typecheck(symb * & s1, symb * & s2); // Checks if two symbbol table entries have same type
 bool typecheck(symbolType * s1, symbolType * s2); // Check if the type objects are equivalent
 
 int nextinstr(); // Returns the address of the next instruction
-string int2string(int); // Converts a number to string mainly used for storing numbers
+
+bool typecheck(symb * & s1, symb * & s2); // Checks if two symbbol table entries have same type
 
 void changeTable(symbolTable * newtable);
 
 /*** Global variables declared in cxx file****/
 
-extern symbolTable * table; // Current Symbol Table
-extern symbolTable * globalSymbolTable; // Global Symbol Table
 extern quads quadArray; // Quads
+extern symbolTable * globalSymbolTable; // Global Symbol Table
+extern symbolTable * table; // Current Symbol Table
 extern symb * currentSymbol; // Pointer to just encountered symbol
 
 /** Attributes/Global for Boolean Expression***/
 
-struct Expression {
+class Expression {
+public:
         bool isbool; // Boolean variable that stores if the expression is bool
 
         // Valid for non-bool type
         symb * symp; // Pointer to the symbol table entry
 
         // Valid for bool type
-        list < int > truelist; // Truelist valid for boolean
-        list < int > falselist; // Falselist valid for boolean expressions
+        li truelist; // Truelist valid for boolean
+        li falselist; // Falselist valid for boolean expressions
 
         // Valid for statement expression
-        list < int > nextlist;};
+        li nextlist;
+        Expression()
+        {
+          ;
+        }
+        symb* getSymp();
+        li getTruelist();
+        li getFalselist();
+        li getNextlist();
+        void setIsBool(bool flag);
+        void setSymp(symb* symp);
+        void setTruelist(li truelist);
+        void setFalselist(li falselist);
+        void setNextlist(li Nextlist);
 
-struct statement {                      // Nextlist for statement
-        list < int > nextlist; };
+      }
+        ;
 
-struct UnaryExpr
-{       
+class statement {                      // Nextlist for statement
+public:
+        list < int > nextlist;
+      statement()
+    {
+      ;
+    }
+    void setNextlist(li nextlist);
+    li getNextlist();
+  };
+
+class UnaryExpr
+{
+public:
         typeEnum cat;
         symb * loc; // Temporary used for computing array address
         symb * symp; // Pointer to symbol table
         symbolType * type; // type of the subarray generated
+        UnaryExpr()
+        {
+          ;
+        }
+        symb* getSymp();
+        symb* getLoc();
+        typeEnum getCat();
+        symbolType* getType();
+        void setSymp(symb* symp);
+        void setLoc(symb* loc);
+        void setCat(typeEnum cat);
+        void setType(symbolType* type);
 };
 
 // Utility functions
-template < typename T > string tostr(const T & t) {
-        ostringstream outstream;
-        outstream << t;
-        return outstream.str();}
 
-Expression * convert2bool(Expression * ); // convert any expression to bool
 Expression * convertfrombool(Expression * ); // convert bool to expression
+Expression * convertfrombool(Expression * e,Expression* e1);
+template < typename T > string tostr(const T & t) {
+      return (SSTR(t));}
+bool isFalse();
+void setUnaryOp(char& a,char b);
+
+Expression * covertToBoolean(Expression * ); // convert any expression to bool
+
 
 #endif

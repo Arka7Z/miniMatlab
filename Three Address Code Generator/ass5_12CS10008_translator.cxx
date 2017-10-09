@@ -11,19 +11,265 @@ symbolTable* table;					// Points to current symbol table
 symb* currentSymbol; 					// points to latest function entry in symbol table
 bool rowison=false;
 
-/* Singleton Design Pattern */
-Singleton* Singleton::pointerToSingleton= NULL;
-Singleton::Singleton()
-{
+// /* Singleton Design Pattern */
+// Singleton* Singleton::pointerToSingleton= NULL;
+// Singleton::Singleton()
+// {
+//
+// }
+// Singleton* Singleton::GetInstance()
+// {
+// 	if (pointerToSingleton== NULL)
+// 	{
+// 		pointerToSingleton = new Singleton();
+// 	}
+// 	return pointerToSingleton;
+// }
 
-}
-Singleton* Singleton::GetInstance()
+//Getter and Setter Methods
+void symbolType::setWidth(int width)
 {
-	if (pointerToSingleton== NULL)
-	{
-		pointerToSingleton = new Singleton();
-	}
-	return pointerToSingleton;
+	this->width=width;
+}
+void symbolType::setColumn(int column)
+{
+	this->column=column;
+}
+void symbolType::setRow(int row)
+{
+	this->row=row;
+}
+void symbolType::setCat(typeEnum cat)
+{
+	this->cat=cat;
+}
+void  symbolType::setPtr(symbolType* ptr)
+{
+	this->ptr=ptr;
+}
+int symbolType::getWidth()
+{
+	return this->width;
+}
+int symbolType::getRow()
+{
+	return this->row;
+}int symbolType::getColumn()
+{
+	return this->column;
+}
+symbolType* symbolType::getPtr()
+{
+	return this->ptr;
+}
+typeEnum symbolType::getCat()
+{
+	return this->cat;
+}
+
+string symb::getName()
+{
+	return this->name;
+}
+string symb::getInit()
+{
+	return this->init;
+}
+string symb::getCategory()
+{
+	return this->category;
+}
+int symb::getOffset()
+{
+	return this->offset;
+}
+symbolTable* symb::getNest()
+{
+	return this->nest;
+}
+symbolType* symb::getType()
+{
+	return this->type;
+}
+void symb::setName(string name)
+{
+	this->name=name;
+}
+void symb::setInit(string init)
+{
+	this->init=init;
+}
+void symb::setCategory(string category)
+{
+	this->category;
+}
+void symb::setOffset(int offset)
+{
+	this->offset=offset;
+}
+void symb::setNest(symbolTable* nest)
+{
+	this->nest=nest;
+}
+
+
+string symbolTable::getTableName()
+{
+	return tableName;
+}
+int symbolTable::getTempCount()
+{
+	int tcount=this->tempCount;
+	return tcount;
+}
+list<symb> symbolTable::getTable()
+{
+	return table;
+}
+void symbolTable::setTableName(string param)
+{
+	tableName=param;
+}
+void symbolTable::setTempCount(int count)
+{
+	tempCount=count;
+}
+void symbolTable::setTable(list<symb> tableParam)
+{
+	table=tableParam;
+}
+void symbolTable::setParent(symbolTable * parent)
+{
+	this->parent=parent;
+}
+opTypeEnum quad::getOpCode()
+{
+	opTypeEnum opcode=this->op;
+	return opcode;
+}
+string quad::getResult()
+{
+	string result=this->result;
+	return result;
+}
+string quad::getArgument1()
+{
+	string argument1=this->argument1;
+	return argument1;
+}
+string quad::getArgument2()
+{
+	string argument2=this->argument2;
+	return argument2;
+}
+void quad::setOpCode(opTypeEnum opcode)
+{
+	op=opcode;
+}
+void quad::setResult(string Result)
+{
+	result=Result;
+}
+void quad::setArgument1(string argument1)
+{
+	this->argument1=argument1;
+}
+void quad::setArgument2(string argument2)
+{
+	this->argument2=argument2;
+}
+
+vector<quad> quads::getArray()
+{
+	return this->array;
+}
+void quads::setArray(vector<quad> v)
+{
+	array=v;
+}
+
+symb* UnaryExpr::getSymp()
+{
+	return symp;
+}
+symb* UnaryExpr::getLoc()
+{
+	return loc;
+}
+typeEnum UnaryExpr::getCat()
+{
+	return cat;
+}
+symbolType* UnaryExpr::getType()
+{
+	return type;
+}
+void UnaryExpr::setSymp(symb* symp1)
+{
+	symp=symp1;
+}
+ void UnaryExpr::setLoc(symb* loc)
+{
+	this->loc=loc;
+}
+void UnaryExpr::setCat(typeEnum cat)
+{
+this->cat=cat;
+}
+ void UnaryExpr::setType(symbolType* type)
+{
+	this->type= type;
+}
+
+symb* Expression::getSymp()
+{
+	return this->symp;
+}
+li Expression::getTruelist()
+{
+	return truelist;
+}
+li Expression::getFalselist()
+{
+	return falselist;
+}
+void Expression::setIsBool(bool flag)
+{
+	isbool=flag;
+}
+void Expression::setSymp(symb* symp)
+{
+	this->symp=symp;
+}
+void Expression::setTruelist(li truelist)
+{
+	this->truelist=truelist;
+}
+void Expression::setFalselist(li falselist)
+{
+	this->falselist=falselist;
+}
+void Expression::setNextlist(li nextlist)
+{
+	this->nextlist=nextlist;
+}
+li Expression::getNextlist()
+{
+	return this->nextlist;
+}
+void statement::setNextlist(li nextlist)
+{
+	this->nextlist=nextlist;
+}
+li statement::getNextlist()
+{
+	return this->nextlist;
+}
+
+
+void setUnaryOp(char& a, char b)
+{
+	a=b;
 }
 list<int> makelist (int i)
 {
@@ -34,21 +280,29 @@ list<int> makelist (int i)
 list<int> merge(list<int> &x, list <int> &y)
 {
 	x.merge(y);
-	return y;
+	return x;
 }
-int sizeoftype (symbolType* t){
+li merge(li &x, li& y, li &z)
+{
+	x.merge(y);
+	z.merge(x);
+	return z;
+}
+int calculateSizeOfType (symbolType* t){
 
-	if(t->cat==_VOID)
+	typeEnum cat=t->cat;
+
+	if(cat==_VOID)
 		return 0;
-	else if(t->cat==_CHAR)
+	else if(cat==_CHAR)
 		return size_of_char;
-	else if(t->cat==_INT)
+	else if(cat==_INT)
 		return size_of_int;
-	else if(t->cat==_DOUBLE)
+	else if(cat==_DOUBLE)
 		return size_of_double;							// TODO: handle pointer and matrix type
 	else
 		{
-		switch (t->cat) {										// Pointers and matrix type have been handled
+		switch (cat) {										// Pointers and matrix type have been handled
 			case PTR:
 				return size_of_pointer;
 			case _MATRIX:
@@ -59,21 +313,22 @@ int sizeoftype (symbolType* t){
 	}
 }
 string returnTypeString (const symbolType* t){
-	if (t==NULL) return "null";
-
-	if(t->cat==_VOID)
+	if (t==NULL)
+	return "null";
+	typeEnum category=t->cat;
+	if(category==_VOID)
 		return "void";
-	else if(t->cat==_INT)
+	else if(category==_INT)
 			return "int";
-	else if(t->cat==_DOUBLE)
+	else if(category==_DOUBLE)
 			return "double";
-	else if(t->cat==_CHAR)
+	else if(category==_CHAR)
 		return "char";						// TODO: handle pointer and matrix type
-	else if(t->cat==PTR)
+	else if(category==PTR)
 			return "ptr("+ returnTypeString(t->ptr)+")";
-	else if(t->cat==_MATRIX)
+	else if(category==_MATRIX)
 			return "Matrix(" + tostr(t->row) + ", "+ tostr(t->column)+", double" + ")";
-	else if (t->cat==FUNC)
+	else if (category==FUNC)
 		return "funct";
 	else
 			return "type";
@@ -127,6 +382,7 @@ symb* gentemp (typeEnum t, string init)
 symb* gentemp (symbolType* t, string init,bool decl)
 {
 		    char n[20];
+				typeEnum category=t->cat;
 		    sprintf(n, "t%02d", table->tempCount++);
 		    symb* s = new symb (n);
 
@@ -161,7 +417,7 @@ symb* gentemp (symbolType* t, string init,bool decl)
 		            table->table.push_back ( *s);
 		        }
 
-		    if(t->cat!=_MATRIX || init=="transpose")
+		    if(category!=_MATRIX || init=="transpose")
 						{
 		        		table->table.push_back ( *s);
 		    		}
@@ -278,6 +534,10 @@ void symbolTable::computeOffsets()
 			    (*iterator)->computeOffsets();
 			}
 }
+bool isFalse()
+{
+	return false;
+}
 symb* symb::linkst(symbolTable* t)
 {
 	this->nest = t;
@@ -319,12 +579,12 @@ ostream& operator<<(ostream& outstream, const symb* it)
 				}
 				return outstream;
 }
-quad::quad (string result, string arg1, optype op, string arg2):
-	result (result), arg1(arg1), arg2(arg2), op (op){};
+quad::quad (string result, string argument1, opTypeEnum op, string argument2):
+	result (result), argument1(argument1), argument2(argument2), op (op){};
 
-quad::quad (string result, int arg1, optype op, string arg2):
-	result (result), arg2(arg2), op (op) {
-		this ->arg1 = SSTR(arg1);
+quad::quad (string result, int argument1, opTypeEnum op, string argument2):
+	result (result), argument2(argument2), op (op) {
+		this ->argument1 = SSTR(argument1);
 	}
 symb::symb (string name, typeEnum t, symbolType* ptr, int width): name(name)
 {
@@ -335,22 +595,26 @@ symb::symb (string name, typeEnum t, symbolType* ptr, int width): name(name)
 			category = nullstring;
 			int zero=0;
 			offset = zero;
-			size = sizeoftype(type);
+			size = calculateSizeOfType(type);
 }
 symb* symb::initialize (string initial)
+{
+	this->init = initial;
+}
+symb* symb::initialise (string initial)
 {
 	this->init = initial;
 }
 symb* symb::update(symbolType* t)
 {
 	this->type = t;
-	this -> size = sizeoftype(t);
+	this -> size = calculateSizeOfType(t);
 	return this;
 }
 symb* symb::update(typeEnum t)
 {
 	this->type = new symbolType(t);
-	this->size = sizeoftype(this->type);
+	this->size = calculateSizeOfType(this->type);
 	return this;
 }
 void quad::update (int addr) {	// Used for backpatching address
@@ -360,52 +624,52 @@ void quad::print ()
 {
 	switch(op) {
 		//UnaryExpr Operators
-		case ADDRESS:		cout << result << " = &" << arg1;				break;
-		case TRANSOP:       cout<<result<<"="<<arg1<<" .'";                      break;
-		case BNOT:			cout << result 	<< " = ~" << arg1;				break;
-		case LNOT:			cout << result 	<< " = !" << arg1;				break;
+		case ADDRESS:		cout << result << " = &" << argument1;				break;
+		case TRANSOP:       cout<<result<<"="<<argument1<<" .'";                      break;
+		case BINARYNOT:			cout << result 	<< " = ~" << argument1;				break;
+		case LNOT:			cout << result 	<< " = !" << argument1;				break;
 		case PARAM: 		cout << "param" <<" "<<result;
 										break;
-		case CALL: 			cout << result << " = " << "call " << arg1<< ", " << arg2;				break;
-		case ARRR:	 		if (arg1!=arg2)
-																cout <<result<< " = " << arg1 << "[" << arg2 << "]";
+		case CALL: 			cout << result << " = " << "call " << argument1<< ", " << argument2;				break;
+		case ARRR:	 		if (argument1!=argument2)
+																cout <<result<< " = " << argument1 << "[" << argument2 << "]";
 																else
-																	cout << result << " = " << arg1 ;
+																	cout << result << " = " << argument1 ;
 														break;
-		case ARRL:	 		if (result!=arg1)
-																cout <<result<< "[" << arg1 << "]" <<" = " <<  arg2;
+		case ARRL:	 		if (result!=argument1)
+																cout <<result<< "[" << argument1 << "]" <<" = " <<  argument2;
 														else
-																cout << result  <<" = " <<  arg2;
+																cout << result  <<" = " <<  argument2;
 														break;
 		case _RETURN: 		cout << "ret"<<" "<< result;				break;
-		case PTRR:			cout <<result<< " "<<"= *" << arg1 ;				break;
-		case PTRL:			cout << "*" << result	<< " = " << arg1 ;		break;
-		case UMINUS:		cout << result 	<< " = -" << arg1;				break;
+		case PTRR:			cout <<result<< " "<<"= *" << argument1 ;				break;
+		case PTRL:			cout << "*" << result	<< " = " << argument1 ;		break;
+		case UNARYMINUS:		cout << result 	<< " = -" << argument1;				break;
 		case LABEL:			cout << result << ": ";					break;
 		// Binary Operations
-		case XOR:			cout << result << " = " << arg1 << " ^ " << arg2;				break;
-		case MODULUS:			cout << result << " = " << arg1 << " % " << arg2;				break;
-		case INOR:			cout << result << " = " << arg1 << " | " << arg2;				break;
-		case BINARYAND:			cout << result << " = " << arg1 << " & " << arg2;				break;
-		case ADD:			cout << result << " = " << arg1 << " + " << arg2;				break;
-		case MULT:			cout << result << " = " << arg1 << " * " << arg2;				break;
-		case SUB:			cout << result << " = " << arg1 << " - " << arg2;				break;
-		case DIVIDE:		cout << result << " = " << arg1 << " / " << arg2;				break;
+		case XOR:			cout << result << " = " << argument1 << " ^ " << argument2;				break;
+		case MODULUS:			cout << result << " = " << argument1 << " % " << argument2;				break;
+		case INCLUSIVEOR:			cout << result << " = " << argument1 << " | " << argument2;				break;
+		case BINARYAND:			cout << result << " = " << argument1 << " & " << argument2;				break;
+		case ADD:			cout << result << " = " << argument1 << " + " << argument2;				break;
+		case MULT:			cout << result << " = " << argument1 << " * " << argument2;				break;
+		case SUB:			cout << result << " = " << argument1 << " - " << argument2;				break;
+		case DIVIDE:		cout << result << " = " << argument1 << " / " << argument2;				break;
 		// Relational Operations
-		case GreaterThan:			cout << "if " << arg1 <<  " > "  << arg2 << " goto " << result;				break;
-		case GE:			cout << "if " << arg1 <<  " >= " << arg2 << " goto " << result;				break;
-		case LT:			cout << "if " << arg1 <<  " < "  << arg2 << " goto " << result;				break;
-		case LE:			cout << "if"<<" "<< arg1 << " "<<"<= " << arg2 << " goto " << result;				break;
+		case GreaterThan:			cout << "if " << argument1 <<  " > "  << argument2 << " goto " << result;				break;
+		case GREATERTHANEQ:			cout << "if " << argument1 <<  " >= " << argument2 << " goto " << result;				break;
+		case LT:			cout << "if " << argument1 <<  " < "  << argument2 << " goto " << result;				break;
+		case LE:			cout << "if"<<" "<< argument1 << " "<<"<= " << argument2 << " goto " << result;				break;
 		case GOTOOP:		cout << "goto " << result;						break;
-		case EQOP:			cout << "if " << arg1 <<  " == " << arg2 << " goto " << result;				break;
-		case NEOP:			cout << "if " << arg1 <<  " != " << arg2 << " goto " << result;				break;
+		case EQOP:			cout << "if " << argument1 <<  " == " << argument2 << " goto " << result;				break;
+		case NEOP:			cout << "if " << argument1 <<  " != " << argument2 << " goto " << result;				break;
 		// Shift Operations
-		case LEFTSHIFT:		cout << result << " = " << arg1 << " << " << arg2;
+		case LEFTSHIFT:		cout << result << " = " << argument1 << " << " << argument2;
 											break;
-		case EQUAL:			cout <<result<< " "<<"="<<" " << arg1 ;
+		case EQUAL:			cout <<result<< " "<<"="<<" " << argument1 ;
 										break;
-		case RIGHTSHIFT:		cout << result<< " = " << arg1 ;
-										cout<< " >> " << arg2;				break;
+		case RIGHTSHIFT:		cout << result<< " = " << argument1 ;
+										cout<< " >> " << argument2;				break;
 		default:			cout << "op";							break;
 	}
 	cout << endl;
@@ -417,17 +681,17 @@ void quads::printtab()
 	cout << setw(8) << Index;
 	string op("op");
 	cout << setw(8) << op;
-	string arg1("arg1");
-	cout << setw(8) << arg1;
-	string arg2("arg2");
-	cout << setw(8) << arg2;
+	string argument1("argument1");
+	cout << setw(8) << argument1;
+	string argument2("argument2");
+	cout << setw(8) << argument2;
 	string result("result");
 	cout << setw(8) << result << endl;
 	for (vector<quad>::iterator it = array.begin(); it!=array.end(); it++)
 	{
 			cout << left << setw(8) << it - array.begin();
 			cout << left << setw(8) << opCodeToString(it->op);
-			string argument1(it->arg1),argument2(it->arg2),result(it->result);
+			string argument1(it->argument1),argument2(it->argument2),result(it->result);
 			cout << left << setw(8) <<argument1;
 			cout << left << setw(8) << argument2;
 			cout << left << setw(8) << result;
@@ -484,13 +748,13 @@ void quads::print ()
 	}
 	cout<<endl;
 }
-void emit(optype op, string result, string arg1, string arg2)
+void emit(opTypeEnum op, string result, string argument1, string argument2)
 {
-	quadArray.array.push_back(*(new quad(result,arg1,op,arg2)));
+	quadArray.array.push_back(*(new quad(result,argument1,op,argument2)));
 
 }
-void emit(optype op, string result, int arg1, string arg2) {
-	quadArray.array.push_back(*(new quad(result,arg1,op,arg2)));
+void emit(opTypeEnum op, string result, int argument1, string argument2) {
+	quadArray.array.push_back(*(new quad(result,argument1,op,argument2)));
 
 }
 string opCodeToString (int op) {
@@ -499,8 +763,8 @@ string opCodeToString (int op) {
 		case ADDRESS:			return " &";
 		case PTRR:				return " *R";
 		case LNOT:				return " !";
-		case UMINUS:			return " -";
-		case BNOT:				return " ~";
+		case UNARYMINUS:			return " -";
+		case BINARYNOT:				return " ~";
 		case CALL: 				return " call ";
 		case ARRR:	 			return " =[]R";
 		case _RETURN: 			return " ret";
@@ -517,7 +781,7 @@ string opCodeToString (int op) {
 		case NEOP:				return " != ";
 		case LT:				return " < ";
 		case GreaterThan:				return " > ";
-		case GE:				return " >= ";
+		case GREATERTHANEQ:				return " >= ";
 		case LE:				return " <= ";
 		case GOTOOP:			return " goto ";
 		default:				return " op ";
@@ -534,7 +798,7 @@ string int2string ( int Number )
 
 	return SSTR(Number);
 }
-Expression* convert2bool (Expression* e) 															// Convert any expression to bool
+Expression* covertToBoolean (Expression* e) 															// Convert any expression to bool
 {
 	if (!e->isbool)
 	{
@@ -552,6 +816,29 @@ Expression* convertfrombool (Expression* e) 																								// Convert a
 					e->symp = gentemp(_INT);
 					backpatch (e->truelist, nextinstr());
 					string expression_name(e->symp->name);
+					emit (EQUAL, expression_name, "true");
+					emit (GOTOOP, tostr (nextinstr()+1));
+					backpatch (e->falselist, nextinstr());
+					emit (EQUAL, expression_name, "false");
+			}
+}
+Expression* convertfrombool (Expression* e,Expression* e1) 																								// Convert any expression to bool
+{
+			if (e->isbool)
+			{
+					e->symp = gentemp(_INT);
+					backpatch (e->truelist, nextinstr());
+					string expression_name(e->symp->name);
+					emit (EQUAL, expression_name, "true");
+					emit (GOTOOP, tostr (nextinstr()+1));
+					backpatch (e->falselist, nextinstr());
+					emit (EQUAL, expression_name, "false");
+			}
+			if (e1->isbool)
+			{
+					e1->symp = gentemp(_INT);
+					backpatch (e1->truelist, nextinstr());
+					string expression_name(e1->symp->name);
 					emit (EQUAL, expression_name, "true");
 					emit (GOTOOP, tostr (nextinstr()+1));
 					backpatch (e->falselist, nextinstr());
