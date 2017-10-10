@@ -1,5 +1,5 @@
 %{
-#include "ass5_12CS10008_translator.h"
+#include "ass4_15CS30003_translator.h"
 
 #include "y.tab.h"
 #include <math.h>
@@ -66,7 +66,8 @@ whitespace				[ \t\v\r\f\n]
 					return INT_CONSTANT; }
 {floating-constant} 			{ 	yylval.string_Value = yytext;
 					                     return FLOAT_CONSTANT; }
-{character-constant} 			{ return CHAR_CONSTANT; }
+{character-constant} 			{ 		yylval.charConst=yytext;
+																return CHAR_CONSTANT; }
 
 "["				{ return '['; }
 "]"				{ return ']'; }
