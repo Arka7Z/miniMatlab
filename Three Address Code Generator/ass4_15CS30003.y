@@ -2,7 +2,7 @@
 
 	#include <string.h>
 	#include <stdio.h>
-	#include "ass5_12CS10008_translator.h"
+	#include "ass4_15CS30003_translator.h"
 	extern	int yylex();
 	void yyerror(const char *s);
 	extern typeEnum TYPE;
@@ -22,7 +22,7 @@
 	symb* symp;
 	Expression* expAtt;
 	symbolType* st;
-
+  char* charConst;
 	UnaryExpr* UnaryExpression;
 	char unaryOP;	//UnaryExpr operator
 }
@@ -49,7 +49,7 @@
 
 
 
-%token <char> CHAR_CONSTANT
+
 %token ELLIPSIS RIGHT_SHIFT_EQUAL DIV_EQUAL LESS_THAN_EQUAL
 %token ADD_EQUAL
 %token RIGHT_SHIFT LEFT_SHIFT
@@ -64,7 +64,7 @@
 %token <integer_value>INT_CONSTANT
 
 %token <string_Value> FLOAT_CONSTANT
-
+%token<charConst> CHAR_CONSTANT
 
 %start translation_unit
 
@@ -157,9 +157,12 @@ constant
 	| CHAR_CONSTANT
   {
     typeEnum type=_CHAR;
-    string flag("a");
-		$$ = gentemp(type);
-		emit(EQUAL, $$->name, type);
+    /*string flag("a");*/
+        string charName=SSTR($1);
+		$$ = gentemp(type,charName);
+    /*cout<<"here hre "<<$1<<endl;*/
+
+		emit(EQUAL, $$->name, charName);
 	}
 	;
 
@@ -196,6 +199,9 @@ postfix_expression
             symb* t6=gentemp(_INT);
             emit(ADD, t6->name,t5->name,tostr(8));          //t8=t7+t8
             $$->loc->name=t6->name;
+            $$->setCat(_MATRIX);
+                ($$->getSymp())->type->cat=_MATRIX;
+                $$->type->cat=_DOUBLE;
 
 		}
  		else {
@@ -204,6 +210,7 @@ postfix_expression
 
 		$$->setCat(_MATRIX);
         ($$->getSymp())->type->cat=_MATRIX;
+        $$->type->cat=_DOUBLE;
 
 	}
 	| postfix_expression '(' ')'
@@ -420,15 +427,31 @@ multiplicative_expression
         {
 		$$ = new Expression();
     typeEnum catTemp=$1->getCat();
-		if ($1->cat==_MATRIX) { // Array
+		if ($1->cat==_MATRIX)
+    { // Array
 
             if (transRUN==false)
                {
-                symbolType *t=new symbolType($1->cat,NULL,0);
-                t->row=($1->symp->type->row);
-                t->column=($1->symp->type->column);
-                $$->symp = gentemp(t,"Mat_temp");
-			  emit(ARRR, $$->symp->name, $1->symp->name, $1->loc->name);
+                     if ($1->type->cat==_DOUBLE)
+                     {
+
+                       $$->symp=gentemp(_DOUBLE);
+                      emit(ARRR, $$->symp->name, $1->symp->name, $1->loc->name);
+
+                      }
+                      else
+                      {
+                        symbolType *t=new symbolType($1->cat,NULL,0);
+                        cout<<"I am here"<<endl;
+                        t->row=($1->symp->type->row);
+                        t->column=($1->symp->type->column);
+                        int row=t->row;
+                        int col=t->column;
+                        $$->symp = gentemp(t,"Mat_temp");
+                        $$->symp->type->row=row;
+                        $$->symp->type->column=col;
+                        emit(ARRR, $$->symp->name, $1->symp->name, $1->loc->name);
+                      }
                 }
             else
                 {
@@ -1121,7 +1144,7 @@ initializer
                     if (rowS[i]==','&& notfound)
                         col++;
                     else if(rowS[i]==';')
-                        {ro=ro+1;notfound=false;cout<<"HELLO "<<ro<<endl;}
+                        {ro=ro+1;notfound=false;}
                     else    ;
                 }
              //symb* t=gentemp(_DOUBLE, initial);
@@ -1223,7 +1246,8 @@ expression_statement
 	;
 
 selection_statement
-	: IF '(' expression N')' M statement N {
+	:
+ IF '(' expression N')' M statement N {
     li n1=$4->nextlist;
 		backpatch (n1, nextinstr());
 
