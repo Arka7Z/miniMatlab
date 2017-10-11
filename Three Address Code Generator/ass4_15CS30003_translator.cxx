@@ -1,6 +1,6 @@
 
 #include "ass4_15CS30003_translator.h"
-/************ Global variables *************/
+// GLOBALS
 
 symbolTable* globalSymbolTable;																									// Global Symbbol Table
 quads quadArray;																																// Quad Array

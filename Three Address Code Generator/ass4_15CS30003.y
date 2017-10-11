@@ -7,8 +7,41 @@
 	void yyerror(const char *s);
 	extern typeEnum TYPE;
 	extern int gDebug;
-    extern bool transRUN;
-    extern bool rowison;
+  extern bool transRUN;
+  extern bool rowison;
+  /*
+  Explanation of Attributes:
+  ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  integer_value: stores the integer(number) in INT_CONSTANT.
+  instr:         stores the index of the next instruction (used in backpatching) for token M.
+  string_Value:  stores the string literal of STRING_LITERAL token and float value(as a string) of FLOAT_CONSTANT token.
+  statAtt:       stores nextlist for backcpatching of non-terminals statement, labeled_statement, compound_statement, selection_statement,
+                 iteration_statement, jump_statement, block_item, block_item_list.
+  symp:          stores the pointer to the symbol table entry for IDENTIFIER, direct_declarator,init_declarator, declarator
+                 Used for example during declaration of variables or functions etc.
+  expAtt:        Stores the Attributes of an expression such as pointer to symbol table entry(for non-conditional expressions)
+                 and Attributes such as nextlist, truelist, falselist(for conditional expressions)
+                 Used for non-terminals 	expression,primary_expression,multiplicative_expression,additive_expression,shift_expression, relational_expression
+	               equality_expression,and_expression,exclusive_or_expression,inclusive_or_expression,logical_and_expression,logical_or_expression
+	               conditional_expression,assignment_expression,expression_statement
+  st:            Attribute for pointer to store the type of entity pointed to by the pointer
+  charConst:     Stores the character(as string) for CHAR_CONSTANT
+  UnaryExpression: Attribute to store different things including pointer to symbol table entry and index tranlation for matrix elements
+                   Used in non-terminals unary_expression, cast_expression, postfix_expression
+  unaryOP:         stores the unary operators like '*','&' for unary_operator non-terminal
+
+  %tokens used in the parser correpond to operators, constants, keywords etc and their meanings can be well derived from their names.
+
+  AUGMENTATIONS:
+  ~~~~~~~~~~~~~
+  Non-Terminals used for augmentation: M, N, CST, empty_token
+  Usage:
+        * M, N:         Used for detecting the address the nextlists, truelist, falselist etc are to be backpatched to.
+        * CST:          Used for nesting symbol tables while parsing function definitions.
+        * empty_token:  To initialize a flag rowison to True which indicates a matrix declaration is taking place.
+
+  */
 
 %}
 
@@ -18,13 +51,12 @@
 	int instr;
 	char* string_Value;
   statement* statAtt;
-	float float_value;
 	symb* symp;
 	Expression* expAtt;
 	symbolType* st;
   char* charConst;
 	UnaryExpr* UnaryExpression;
-	char unaryOP;	//UnaryExpr operator
+	char unaryOP;
 }
 
 %token MATRIX
@@ -49,7 +81,6 @@
 
 
 
-
 %token ELLIPSIS RIGHT_SHIFT_EQUAL DIV_EQUAL LESS_THAN_EQUAL
 %token ADD_EQUAL
 %token RIGHT_SHIFT LEFT_SHIFT
@@ -60,7 +91,7 @@
 %token EQUALITY NOT_EQUAL_TO TRANSPOSE
 %token GREATER_THAN_EQUAL MULT_EQUAL
 %token <string_Value> STRING_LITERAL
-%token <symp>IDENTIFIER  PUNCTUATORS COMMENT
+%token <symp>IDENTIFIER
 %token <integer_value>INT_CONSTANT
 
 %token <string_Value> FLOAT_CONSTANT
@@ -103,7 +134,7 @@
 
 
 %%
-primary_expression
+primary_expression                                                    // reduces constants, identifiers, string literals and parenthesized expressions
 	:
   constant
   {
@@ -131,7 +162,7 @@ primary_expression
 	}
 	;
 
-constant
+constant                                                       // Here temporaries of the appropriate type(int,char,float) are generated and the initial value is stored
 	: INT_CONSTANT
   {
       string val=int2string($1);
@@ -168,15 +199,15 @@ constant
 
 postfix_expression
 	: primary_expression
-  {
+  {                                                                           // synthesized Attributes such as location and symp of postfix_expression are set
 		$$ = new UnaryExpr ();
 		$$->setSymp( $1->symp);
 		$$->setLoc($$->symp);
 		$$->setType( $1->symp->type);
         $$->setCat($$->type->cat);
 	}
-	| postfix_expression '[' expression ']''['expression']' {
-		$$ = new UnaryExpr();
+	| postfix_expression '[' expression ']''['expression']' {                   // Matrix type is handled here separately which includes
+		$$ = new UnaryExpr();                                                     // translating the matrix indices to appropriate memory locations
 
 		$$->setSymp( $1->symp);			// copy the base
 		$$->setType($1->type->ptr);		// type = type of element
@@ -191,13 +222,13 @@ postfix_expression
             symb* t2=gentemp(_INT);
             emit(SUB,t2->name,t->name,tostr(4));
             symb* t3=gentemp(_INT);
-            emit(MULT, t3->name, t2->name, t1->name);     //t5=t4*T3
+            emit(MULT, t3->name, t2->name, t1->name);                           //t5=t4*T3
             symb* t4=gentemp(_INT);
-            emit(MULT, t4->name, $6->symp->name, tostr(4));  //t6=i*4
+            emit(MULT, t4->name, $6->symp->name, tostr(4));                     //t6=i*4
             symb* t5=gentemp(_INT);
             emit(ADD, t5->name,t3->name, t4->name);
             symb* t6=gentemp(_INT);
-            emit(ADD, t6->name,t5->name,tostr(8));          //t8=t7+t8
+            emit(ADD, t6->name,t5->name,tostr(8));                              //t8=t7+t8
             $$->loc->name=t6->name;
             $$->setCat(_MATRIX);
                 ($$->getSymp())->type->cat=_MATRIX;
@@ -215,7 +246,7 @@ postfix_expression
 	}
 	| postfix_expression '(' ')'
 	| postfix_expression '(' argument_expression_list ')'
-  {
+  {                                                                             // function calls are handled here
 		$$ = new UnaryExpr();
     typeEnum type=$1->getType()->cat;
 		$$->setSymp( gentemp(type));
@@ -225,7 +256,7 @@ postfix_expression
 	}
 	| postfix_expression '.' IDENTIFIER /* Ignored */
 	| postfix_expression ARROW IDENTIFIER  /* Ignored */
-	| postfix_expression INCREMENT {
+	| postfix_expression INCREMENT {                                              // Matrix type is handled separately
 		$$ = new UnaryExpr();
 
 		// copy $1 to $$
@@ -251,7 +282,7 @@ postfix_expression
 	}
 	| postfix_expression DECREMENT {
 		$$ = new UnaryExpr();
-         if ($1->getSymp()->type->cat==_MATRIX)
+         if ($1->getSymp()->type->cat==_MATRIX)                                 // Matrix type is handled separately
         {
             symb* t1=gentemp(_DOUBLE);
             symb* t2=gentemp(_DOUBLE);
@@ -272,9 +303,8 @@ postfix_expression
         }
 	}
 
-    | postfix_expression TRANSPOSE{
-            transRUN=true;
-
+    | postfix_expression TRANSPOSE{                                          // Handling matrix transpose operation where a temp is generated which
+            transRUN=true;                                                   // stores the transposed matrix and is later assigned to the lhs matrix of transpose op.
             symb* t=gentemp($1->type,"transpose");
             emit(TRANSOP,t->name,$1->symp->name);
             $$->symp=t;
@@ -282,7 +312,7 @@ postfix_expression
 	;
 
 argument_expression_list
-	: assignment_expression {
+	: assignment_expression {                                                  // generating quads for function call parameters( param)
 		emit (PARAM, $1->getSymp()->name);
 		$$ = 1;
 	}
@@ -294,8 +324,8 @@ argument_expression_list
 
 unary_expression
 	: postfix_expression
-    {
-		$$ = $1;
+    {                                                                         // Unary Expressions are handled here and matrix elements have been handled separately
+		$$ = $1;                                                                 // where necessary as they need access to the temporary(in loc) that stores the index translation.
 	}
 	| INCREMENT unary_expression
     {
@@ -304,8 +334,8 @@ unary_expression
             symb* t1=gentemp(_DOUBLE);
             emit(ARRR,t1->name,$2->symp->name,$2->loc->name);
             emit(ADD,t1->name,t1->name, "1");
-            emit(ARRL,$2->symp->name,$2->loc->name,t1->name);
-
+            emit(ARRL,$2->symp->name,$2->loc->name,t1->name);                // Attribute loc stores the temporary which has the final translation of matrix indices
+                                                                            // For example: t in m[t] where m is a Matrix.
         }
         else
         {
@@ -322,7 +352,8 @@ unary_expression
             symb* t1=gentemp(_DOUBLE);
             emit(ARRR,t1->name,$2->symp->name,$2->loc->name);
             emit(SUB,t1->name,t1->name, "1");
-            emit(ARRL,$2->symp->name,$2->loc->name,t1->name);
+            emit(ARRL,$2->symp->name,$2->loc->name,t1->name);               // Attribute loc stores the temporary which has the final translation of matrix indices
+                                                                            // For example: t in m[t] where m is a Matrix.
         }
         else{
           string arg=$2->getSymp()->name;
@@ -338,7 +369,7 @@ unary_expression
 		$$ = new UnaryExpr();
     string name1,name2;
 		switch ($1) {
-			case '&':
+			case '&':                                                          // Handling unary operators (matrix type is handled separately here as well the way mentioned above)
 				        $$->setSymp ( gentemp(PTR));
 				        $$->symp->type->ptr = $2->getSymp()->type;
                         if ($2->symp->type->cat==_MATRIX)
@@ -387,7 +418,7 @@ unary_expression
 unary_operator
 	:
    '!' {
-
+                                                                            // assigns the unary operator string such as'-,'&' etc to unary_operator
         setUnaryOp($$,'!');
   }
 	| '*' {
@@ -416,11 +447,15 @@ unary_operator
 
 cast_expression
 	: unary_expression
-   {
+   {                                                                            // Copy all the Attributes
 		$$ = $1;
 	}
 
 	;
+
+
+  /*Each Expression of the form multiplicative_expression binary_operator cast_expression is typechecked
+  for determining compatibility wrt the operation*/
 
 multiplicative_expression
 	: cast_expression
@@ -428,9 +463,14 @@ multiplicative_expression
 		$$ = new Expression();
     typeEnum catTemp=$1->getCat();
 		if ($1->cat==_MATRIX)
-    { // Array
+    {                                                             // Matrix
+
+                          /*If a matrix transpose operation is currently runnig(indicated by the transRUN flag)
+                          then the dimensions of the temporary generated
+                          are handled separately*/
 
             if (transRUN==false)
+
                {
                      if ($1->type->cat==_DOUBLE)
                      {
@@ -442,7 +482,7 @@ multiplicative_expression
                       else
                       {
                         symbolType *t=new symbolType($1->cat,NULL,0);
-                        cout<<"I am here"<<endl;
+                        /*cout<<"I am here"<<endl;*/
                         t->row=($1->symp->type->row);
                         t->column=($1->symp->type->column);
                         int row=t->row;
@@ -459,7 +499,7 @@ multiplicative_expression
                     $$->setSymp ($1->symp);
                 }
 		}
-		else if (catTemp==PTR) { // Pointer
+		else if (catTemp==PTR) {                                   // Handling the case of pointers separately
 			$$->setSymp ( $1->loc);
 		}
 		else { // otherwise
@@ -469,7 +509,7 @@ multiplicative_expression
 	| multiplicative_expression '*' cast_expression
   {
 
-		if (typecheck ($1->symp,$3->symp))
+		if (typecheck ($1->symp,$3->symp))                                 // Handling Type Check
     {
 			$$ = new Expression();
 			$$->setSymp(gentemp(($1->getSymp())->type->cat));
@@ -480,7 +520,7 @@ multiplicative_expression
 		else cout << "Type Error"<< endl;
 	}
 	| multiplicative_expression '/' cast_expression{
-		if (typecheck ($1->symp, $3->symp) ) {
+		if (typecheck ($1->symp, $3->symp) ) {                            // Handling Type Check
 			$$ = new Expression();
       $$->setSymp(gentemp($1->getSymp()->type->cat));
       string name1=$1->getSymp()->name;
@@ -490,7 +530,7 @@ multiplicative_expression
 		else cout << "Type Error"<< endl;
 	}
 	| multiplicative_expression '%' cast_expression {
-		if (typecheck ($1->symp, $3->symp) ) {
+		if (typecheck ($1->symp, $3->symp) ) {                            // Handling Type Check
 			$$ = new Expression();
       $$->setSymp(gentemp($1->getSymp()->type->cat));
       string name1=$1->getSymp()->name;
@@ -501,11 +541,15 @@ multiplicative_expression
 	}
 	;
 
+
+  /*Each Expression of the form  additive_expression [+-] multiplicative_expression is typechecked
+  for determining compatibility wrt the operation*/
+
 additive_expression
 	: multiplicative_expression {$$ = $1;}
 	| additive_expression '+' multiplicative_expression
   {
-		if (typecheck($1->symp, $3->symp))
+		if (typecheck($1->symp, $3->symp))                          // Handling Type Check
     {
 			$$ = new Expression();
 
@@ -518,7 +562,7 @@ additive_expression
 		else cout << "Type Error"<< endl;
 	}
 	| additive_expression '-' multiplicative_expression {
-		if (typecheck($1->symp, $3->symp))
+		if (typecheck($1->symp, $3->symp))                          // Handling Type Check
     {
 			$$ = new Expression();
       $$->setSymp(gentemp($1->getSymp()->type->cat));
@@ -531,13 +575,17 @@ additive_expression
 	}
 	;
 
+
+  /*For an expression to support shift operation on itself it should be of type integer
+  which is checked in the following code. Else Type Error is generated*/
+
 shift_expression
 	: additive_expression {$$ = $1;}
 	| shift_expression LEFT_SHIFT additive_expression
   {
     typeEnum intType=_INT;
     typeEnum cat=$3->symp->type->cat;
-		if (cat == intType)
+		if (cat == intType)                                             // Checking if additive_expression is of type integer
     {
 			$$ = new Expression();
 			$$->setSymp(gentemp (intType));
@@ -549,7 +597,7 @@ shift_expression
 		}
 		else cout << "Type Error"<< endl;
 	}
-	| shift_expression RIGHT_SHIFT additive_expression
+	| shift_expression RIGHT_SHIFT additive_expression               // Checking if additive_expression is of type integer
   {typeEnum intType=_INT;
       typeEnum cat=$3->symp->type->cat;
 		if (cat == intType) {
@@ -565,6 +613,12 @@ shift_expression
 	}
 	;
 
+                                  /*
+                                    In the following section truelist and falselist are generated which are backpatched later
+                                    ie the goto labels in the quad emissions are kept empty as indicated in following comments.
+                                    Before comparing two expressions(relational_expression,shift_expression) their type compatibility is also checked
+                                  */
+
 relational_expression
 	: shift_expression
   {
@@ -575,15 +629,15 @@ relational_expression
      {
 			// New bool
 			$$ = new Expression();
-			$$->setIsBool(true);
+			$$->setIsBool(true);                                             // relational_expression is of type conditional which is set here.
 
 			$$->truelist = makelist (nextinstr());
 			$$->falselist = makelist (nextinstr()+1);
       string nullstring="";
       string name1=$1->getSymp()->name;
       string name2=$3->getSymp()->name;
-			emit(LT, nullstring, name1, name2);
-			emit (GOTOOP, nullstring);
+			emit(LT, nullstring, name1, name2);                             // emit if name1<name2 goto ___
+			emit (GOTOOP, nullstring);                                      // emit goto ___
 		}
 		else cout << "Type Error"<< endl;
 	}
@@ -593,15 +647,15 @@ relational_expression
     {
 			// New bool
 			$$ = new Expression();
-			$$->setIsBool(true);
+			$$->setIsBool(true);                                            // relational_expression is of type conditional which is set here.
 
 			$$->truelist = makelist (nextinstr());
 			$$->falselist = makelist (nextinstr()+1);
       string nullstring="";
       string name1=$1->getSymp()->name;
       string name2=$3->getSymp()->name;
-      emit(GreaterThan, nullstring, name1, name2);
-      emit (GOTOOP, nullstring);
+      emit(GreaterThan, nullstring, name1, name2);                  // emit if name1>name2 goto ___
+      emit (GOTOOP, nullstring);                                    // emit goto ___
 
 		}
 		else cout << "Type Error"<< endl;
@@ -619,8 +673,8 @@ relational_expression
       string nullstring="";
       string name1=$1->getSymp()->name;
       string name2=$3->getSymp()->name;
-      emit(LE, nullstring, name1, name2);
-      emit (GOTOOP, nullstring);
+      emit(LE, nullstring, name1, name2);                              // emit if name1<=name2 goto ___
+      emit (GOTOOP, nullstring);                                      // emit goto ___
 		}
 		else cout << "Type Error"<< endl;
 	}
@@ -635,39 +689,44 @@ relational_expression
       string nullstring="";
       string name1=$1->getSymp()->name;
       string name2=$3->getSymp()->name;
-      emit(GREATERTHANEQ, nullstring, name1, name2);
-      emit (GOTOOP, nullstring);
+      emit(GREATERTHANEQ, nullstring, name1, name2);                   // emit if name1<=name2 goto ___
+      emit (GOTOOP, nullstring);                                       // emit goto ___
 		}
 		else cout << "Type Error"<< endl;
 	}
 	;
 
+                            /*
+                              In the following section truelist and falselist are generated which are backpatched later
+                              ie the goto labels in the quad emissions are kept empty as indicated in following comments.
+                              Before comparing two expressions(equality_expression,relational_expression) their type compatibility is also checked
+                            */
 equality_expression
 	: relational_expression {$$ = $1;}
 	| equality_expression EQUALITY relational_expression {
 		if (typecheck ($1->symp, $3->symp) )
     {
-			// If any is bool get its value
+
 			convertfrombool ($1);
 			convertfrombool ($3);
 
 			$$ = new Expression();
-			$$->setIsBool(true);
+			$$->setIsBool(true);                                                // equality_expression is of type conditional which is set here for future use.
 
 			$$->truelist = makelist (nextinstr());
 			$$->falselist = makelist (nextinstr()+1);
       string nullstring="";
       string name1=$1->getSymp()->name;
       string name2=$3->getSymp()->name;
-      emit(EQOP, nullstring, name1, name2);
-      emit (GOTOOP, nullstring);
+      emit(EQOP, nullstring, name1, name2);                               // emit if name1==name2 goto ___
+      emit (GOTOOP, nullstring);                                          // goto ___
 
 		}
 		else cout << "Type Error"<< endl;
 	}
 	| equality_expression NOT_EQUAL_TO relational_expression {
 		if (typecheck ($1->symp, $3->symp) ) {
-			// If any is bool get its value
+
 			convertfrombool ($1);
 			convertfrombool ($3);
 
@@ -679,21 +738,25 @@ equality_expression
       string nullstring="";
       string name1=$1->getSymp()->name;
       string name2=$3->getSymp()->name;
-      emit(NEOP, nullstring, name1, name2);
-      emit (GOTOOP, nullstring);
+      emit(NEOP, nullstring, name1, name2);                               // emit if name1!=name2 goto ___
+      emit (GOTOOP, nullstring);                                          // goto ___
 	;
 		}
 		else cout << "Type Error"<< endl;
 	}
 	;
 
+
+                                          /*
+                                            Type compatibility is also checked before quad emission.
+                                          */
 AND_expression
 	: equality_expression {$$ = $1;}
 	| AND_expression '&' equality_expression {
 		if (typecheck ($1->symp, $3->symp) )
     {
 			$$ = new Expression();
-			$$->setIsBool(false);
+			$$->setIsBool(false);                                              // AND_expression is not a conditional expression
 
 			$$->setSymp(gentemp (_INT));
       string name=$$->getSymp()->name;
@@ -711,12 +774,12 @@ exclusive_OR_expression
 		if (typecheck ($1->symp, $3->symp) )
 
     {
-			// If any is bool get its value
+
 			convertfrombool ($1,$3);
 		   $$ = new Expression();
 
 
-			$$->setIsBool(false);
+			$$->setIsBool(false);                                        // exclusive_OR_expression is not a conditional expression
       $$->setSymp(gentemp (_INT));
       string name=$$->getSymp()->name;
       string name1=$1->getSymp()->name;
@@ -727,18 +790,22 @@ exclusive_OR_expression
 	}
 	;
 
+                                  /*
+                                    Type compatibility is also checked before quad emission.
+                                  */
+
 inclusive_OR_expression
 	: exclusive_OR_expression {$$ = $1;}
 	| inclusive_OR_expression '|' exclusive_OR_expression {
 		if (typecheck ($1->symp, $3->symp) )
 
     {
-			// If any is bool get its value
+
 
 			convertfrombool ($1,$3);
       $$ = new Expression();
 
-			$$->setIsBool(false);
+			$$->setIsBool(false);                                         // inclusive_OR_expression is not a conditional expression
       $$->setSymp(gentemp (_INT));
       string name=$$->getSymp()->name;
       string name1=$1->getSymp()->name;
@@ -749,31 +816,36 @@ inclusive_OR_expression
 		else cout << "Type Error"<< endl;
 	}
 	;
+  /*
+    Type compatibility is also checked before quad emission.
+  */
 
 logical_AND_expression
 	: inclusive_OR_expression
   {
-    $$ = $1;
+    $$ = $1;                                                     // copy all the Attributes including truelist and falselist
   }
 	| logical_AND_expression N AND_AND M inclusive_OR_expression
   {
 		covertToBoolean($5);
 
-		// N to convert $1 to bool
-		backpatch($2->nextlist, nextinstr());
+
+		backpatch($2->nextlist, nextinstr());                        // backpatching
 		covertToBoolean($1);
     $$ = new Expression();
 
-    $$->setIsBool(true);
+    $$->setIsBool(true);                                        // inclusive_OR_expression is not a conditional expression
 
-		backpatch($1->getTruelist(), $4);
-		$$->setTruelist($5->getTruelist());
+		backpatch($1->getTruelist(), $4);                           // backpatching
+		$$->setTruelist($5->getTruelist());                         // if B->B1 && B2 then B.truelist=B2.truelist
+                                                                // And B.falselist=merge(B1.falselist,B2.falselist) which is set here.
 		$$->setFalselist (merge ($1->falselist, $5->falselist));
 	}
 	;
 
 logical_OR_expression
-	: logical_AND_expression {$$ = $1;}
+	: logical_AND_expression {$$ = $1;                        // copy all the Attributes including truelist and falselist
+                            }
 	| logical_OR_expression N OR_OR M logical_AND_expression {
 		covertToBoolean($5);
 
@@ -782,22 +854,23 @@ logical_OR_expression
 		covertToBoolean($1);
     $$ = new Expression();
 
-		$$->setIsBool(true);
+		$$->setIsBool(true);                                        // inclusive_OR_expression is not a conditional expression
 
 		backpatch ($$->getFalselist(), $4);
-		$$->setTruelist( merge ($1->truelist, $5->truelist));
+		$$->setTruelist( merge ($1->truelist, $5->truelist));     // if B->B1 || B2 then B.truelist=merge(B1.truelist,B2.truelist)
+                                                                // And B.falselist=meger(B2.falselist) which is set here.
 		$$->setFalselist($5->falselist);
 	}
 	;
 
-M 	: %empty{	// To store the address of the next instruction for further use.
+M 	: %empty{	                                                                  // Stores the address of the nextinstruction to be used in backpatching
 		$$ = nextinstr();
 	};
 
-N 	: %empty { 	// Non terminal to prevent fallthrough by emitting a goto
+N 	: %empty { 	                                                                // Prevents fall by emitting a GOTO
 
 		$$  = new Expression();
-		$$->nextlist = makelist(nextinstr());
+		$$->nextlist = makelist(nextinstr());                                      // Nextlist points to the next instruction.
     string nullstring="";
 		emit (GOTOOP,nullstring);
 
@@ -807,7 +880,8 @@ conditional_expression
 	: logical_OR_expression {$$ = $1;}
 	| logical_OR_expression N '?' M expression N ':' M conditional_expression
   {
-//		covertToBoolean($5);
+              /*Ternary operator is handled here*/
+
 		$$->setSymp( gentemp());
 		($$->getSymp())->update($5->getSymp()->type);
     string res=$$->getSymp()->name;
@@ -824,7 +898,8 @@ conditional_expression
 		emit(EQUAL, res, arg);
 		li l = makelist(nextinstr());
     string nullstring="";
-		emit (GOTOOP,nullstring);
+		emit (GOTOOP,nullstring);                           // emit goto_______
+                                                        // the empty lable is to be backpatched later suitably
 
 		backpatch($6->nextlist, nextinstr());
     res=$$->getSymp()->name;
@@ -849,8 +924,13 @@ assignment_expression
   {
 		$$ = $1;
 	}
-	| unary_expression assignment_operator assignment_expression {///////////////////
+	| unary_expression assignment_operator assignment_expression {
     typeEnum category=$1->getCat();
+
+                                                /*
+                                                The case where the LHS of the assignment_expression is a matrix (within it,
+                                                whether a transpose operation is being handled) or pointer is dealt with separately
+                                                */
 
     if (category==_MATRIX)
     {
@@ -865,6 +945,7 @@ assignment_expression
     }
     else if(category==PTR)
     {
+
       emit(PTRL, $1->symp->name, $3->symp->name);
 
     }
@@ -876,6 +957,8 @@ assignment_expression
 		$$ = $3;
 	}
 	;
+                                /*The different assignment operators such as =,/= etc
+                                are assigned to assignment_operator here*/
 
 assignment_operator
 	: MULT_EQUAL |'='| OR_EQUAL| LEFT_SHIFT_EQUAL  | DIV_EQUAL | MOD_EQUAL | ADD_EQUAL  | AND_EQUAL | SUB_EQUAL | RIGHT_SHIFT_EQUAL| XOR_EQUAL
@@ -891,7 +974,8 @@ expression
 
 constant_expression : conditional_expression;
 
-/*** Declaration ***/
+
+                                            // declaration of functions and variables are dealt with here onwards
 
 declaration
 	: declaration_specifiers ';' {}
@@ -900,7 +984,7 @@ declaration
 
 declaration_specifiers
 	:
-       type_specifier
+    type_specifier
 	| type_specifier declaration_specifiers
 
 
@@ -926,7 +1010,7 @@ init_declarator
 	}
 	;
 
-
+                                        // The variable type stores the latest type of identifier declared.
 type_specifier
 	: VOID {TYPE = _VOID;	}
 	| CHAR {
@@ -982,7 +1066,10 @@ direct_declarator
 
 	| direct_declarator '[' assignment_expression ']''[' assignment_expression ']'
         {
-
+                                /*
+                                    While declaring a matrix the row and column dimensions are stored
+                                    in the row column attribute field
+                                */
 			    int x = atoi($3->symp->init.c_str());
 			    symbolType* s = new symbolType(_MATRIX, $1->type, x);
                 s->row=x;
@@ -992,12 +1079,6 @@ direct_declarator
 
 	    }
 	| direct_declarator '[' ']' {
-		/*symbolType * t = $1 -> type;
-		symbolType * prev = NULL;
-		while (t->cat == ARR) {
-			prev = t;
-			t = t->ptr;
-		}*/
     symbolType * t = $1 -> type;
     symbolType * prev = NULL;
 
@@ -1017,46 +1098,49 @@ direct_declarator
 	| direct_declarator '['   assignment_expression ']' | direct_declarator '['  '*' ']'
 	| direct_declarator '(' CST parameter_type_list ')'
   {
+                                /*
+                                      Dealing with a Function declaration
+                                */
     string funcName=$1->getName();
-    table->setTableName(funcName);
-    typeEnum returnCat=$1->getType()->cat;
-		if (returnCat !=_VOID)
+    table->setTableName(funcName);                          // set the name of the table to the function name
+    typeEnum returnCat=$1->getType()->cat;                 // get the return type of the function from the non-terminal direct_declarator
+		if (returnCat !=_VOID)                                 // if the function is of return type non-void
     {
 			symb *s = table->lookup("retVal");
-			s->update($1->type);
+			s->update($1->type);                                 // update the return type  of the function in its entry in the symbol table
 		}
 
-		$1 = $1->linkst(table);
+		$1 = $1->linkst(table);                                // set the nest link of this new function to its own separate symbol table
 
-		table->setParent(globalSymbolTable);
-		changeTable (globalSymbolTable);				// Come back to globalsymbol table
+		table->setParent(globalSymbolTable);                   // set parent of the new function
+		changeTable (globalSymbolTable);				               // return to the global symbol table
 
 		currentSymbol = $$;
 	}
 	| direct_declarator '(' identifier_list ')' 	| direct_declarator '(' CST ')' {
     string funcName=$1->getName();
-    table->setTableName(funcName);			// Update function symbol table name
-    typeEnum returnCat=$1->getType()->cat;
+    table->setTableName(funcName);			                  // set the name of the table to the function name
+    typeEnum returnCat=$1->getType()->cat;                // get the return type of the function from the non-terminal direct_declarator
 		if (returnCat !=_VOID) {
-			symb *s = table->lookup("retVal");// Update type of return value
+			symb *s = table->lookup("retVal");                  // update the return type  of the function in its entry in the symbol table
 			s->update($1->type);
 		}
 
-		$1 = $1->linkst(table);		// Update type of function in global table
+		$1 = $1->linkst(table);		                           // set the nest link of this new function to its own separate symbol table
 
 		table->setParent(globalSymbolTable);
-		changeTable (globalSymbolTable);				// Come back to globalsymbol table
+		changeTable (globalSymbolTable);				             // return to the global symbol table
 
 		currentSymbol = $$;
 	}
 	;
 
-CST : %empty { // Used for changing to symbol table for a function
-		if (currentSymbol->nest==NULL) changeTable(new symbolTable(""));	// Function symbol table doesn't already exist
+CST : %empty {                                                                 // Used for switching function table
+		if (currentSymbol->nest==NULL) changeTable(new symbolTable(""));	         // create a new table if it doesnt exist.
 		else {
-			changeTable (currentSymbol ->nest);						// Function symbol table already exists
+			changeTable (currentSymbol ->nest);						                           // Function symbol table already exists
       string tableName=table->getTableName();
-			emit (LABEL,tableName);
+			emit (LABEL,tableName);                                                  // emit labels corresponding to the function names.
 		}
 	}
 	;
@@ -1070,13 +1154,12 @@ pointer
 	;
 
 
-
+                           /*
+                                    Dealing with parameters declaration for functions.
+                          */
 
 parameter_type_list
-	: parameter_list
-
-
-	;
+	: parameter_list;
 
 parameter_list
 	: parameter_declaration | parameter_list ',' parameter_declaration
@@ -1089,6 +1172,7 @@ parameter_declaration
 	| declaration_specifiers
 
 	;
+                                                // List of identifiers
 
 identifier_list
 	: IDENTIFIER
@@ -1098,7 +1182,7 @@ identifier_list
 
 
 
-
+                                     /* The following parsing rules come into play while declaring a Matrix*/
 
 initializer_row_list:
                 initializer_row
@@ -1130,6 +1214,7 @@ initializer
 	}
 	| '{' empty_token initializer_row_list '}'
         {
+                                    /* the initial value string of the matrix is parsed to assign proper dimensions to the temporary*/
 
               $$=$3;
               string initial="{"+$3->init+"}";
@@ -1151,7 +1236,7 @@ initializer
 
 
                 symbolType *t=new symbolType(_MATRIX,NULL,0);
-                t->row=ro;
+                t->row=ro;                                                // assign the dimensions of temporary generated
                 t->column=col;
                 cout<<t->row<<endl;
                 symb *t1= gentemp(t,$$->init,true);
@@ -1160,7 +1245,12 @@ initializer
 
 	;
 
-empty_token:    %empty  {rowison=true;}
+empty_token:    %empty  {
+                  rowison=true;
+                }
+
+
+
 
 designation
 	: designator_list '='
@@ -1202,7 +1292,7 @@ statement
 	                                     }
 	;
 
-labeled_statement /* Ignored */
+labeled_statement
 	: IDENTIFIER ':' statement {$$ = new statement();}
 	| CASE constant_expression ':' statement {$$ = new statement();}
 	| DEFAULT ':' statement {$$ = new statement();}
@@ -1244,12 +1334,12 @@ expression_statement
     $$ = $1;
   }
 	;
-
+                                          /* deals with the if statements*/
 selection_statement
 	:
  IF '(' expression N')' M statement N {
     li n1=$4->nextlist;
-		backpatch (n1, nextinstr());
+		backpatch (n1, nextinstr());                                      // backpatching
 
 		covertToBoolean($3);
 
@@ -1261,19 +1351,19 @@ selection_statement
 
 	}
 	| IF '(' expression N ')' M statement N ELSE M statement {
-		backpatch ($8->nextlist, nextinstr());
+		backpatch ($8->nextlist, nextinstr());                          // backpatching
 		covertToBoolean($3);
         $$=new statement();
-		backpatch ($3->truelist, $6);
-		backpatch ($3->falselist, $10);
+		backpatch ($3->truelist, $6);                                   // backpatching
+		backpatch ($3->falselist, $10);                                 // backpatching
     li tmp= merge ($7->nextlist, $8->nextlist);
     li tmp2=merge (tmp, $11->nextlist);
 		$$->setNextlist(tmp2);
 	}
-	| SWITCH '(' expression ')' statement /* Skipped */
+	| SWITCH '(' expression ')' statement                                /* Skipped */
 
 	;
-
+                                          /*  Dealing with iterations( for,while,do-while). */
 iteration_statement
 	: WHILE M '(' expression ')' M statement {
 		$$ = new statement();
@@ -1283,7 +1373,7 @@ iteration_statement
     li expressionList=$4->getTruelist();
 		backpatch(expressionList, $6);
 		$$->nextlist = $4->getFalselist();
-		// Emit to prevent fallthrough
+
     string two=SSTR($2);
 		emit (GOTOOP, two);
 	}
@@ -1344,6 +1434,8 @@ jump_statement
 
 	}
 	;
+
+                                                          /* External Definition Phase */
 
 translation_unit
 	: external_declaration | translation_unit external_declaration	;
