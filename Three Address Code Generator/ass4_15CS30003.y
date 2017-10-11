@@ -512,9 +512,39 @@ multiplicative_expression
 		if (typecheck ($1->symp,$3->symp))                                 // Handling Type Check
     {
 			$$ = new Expression();
-			$$->setSymp(gentemp(($1->getSymp())->type->cat));
+      int row,col;
+      if ($1->symp->type->cat==_MATRIX && $3->symp->type->cat==_MATRIX)
+        {
+              symbolType *t=new symbolType($1->symp->type->cat,NULL,0);
+              row=$1->symp->type->row;
+              col=$3->symp->type->column;
+              $$->symp = gentemp(t,"Mat_temp");
+        }
+        else if ($1->symp->type->cat!=_MATRIX && $3->symp->type->cat==_MATRIX)
+        {
+          symbolType *t=new symbolType($1->symp->type->cat,NULL,0);
+          row=$3->symp->type->row;
+          col=$3->symp->type->column;
+          $$->symp = gentemp(t,"Mat_temp");
+        }
+        else if ($1->symp->type->cat==_MATRIX && $3->symp->type->cat!=_MATRIX)
+        {
+          symbolType *t=new symbolType($1->symp->type->cat,NULL,0);
+          row=$1->symp->type->row;
+          col=$1->symp->type->column;
+          $$->symp = gentemp(t,"Mat_temp");
+        }
+        else
+			       $$->setSymp(gentemp(($1->getSymp())->type->cat));
+        if ($1->symp->type->cat==_MATRIX || $3->symp->type->cat==_MATRIX)
+        {
+          $$->symp->type->row=row;
+          $$->symp->type->column=col;
+        }
+
       string name1=$1->getSymp()->name;
       string name2=$3->getSymp()->name;
+
 			emit (MULT, $$->symp->name, name1, name2);
 		}
 		else cout << "Type Error"<< endl;
