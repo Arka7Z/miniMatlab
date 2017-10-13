@@ -393,7 +393,21 @@ unary_expression
 				        $$ = $2;
 				        break;
 			case '-':
-				        $$->setSymp(gentemp($2->getSymp()->type->cat));
+
+                if ($2->symp->type->cat==_MATRIX)
+                {
+                  symbolType *t=new symbolType($2->cat,NULL,0);
+                  t->row=($2->symp->type->row);
+                  t->column=($2->symp->type->column);
+                  int row=t->row;
+                  int col=t->column;
+                  $$->symp = gentemp(t,"Mat_temp");
+                  $$->symp->type->row=row;
+                  $$->symp->type->column=col;
+                  $$->symp->size=(row*col*size_of_double)+8;
+                }
+                else
+                  $$->setSymp(gentemp($2->getSymp()->type->cat));
                 name1=$$->getSymp()->name;
 				        emit (UNARYMINUS, name1, $2->getSymp()->name);
 				        break;
@@ -490,6 +504,7 @@ multiplicative_expression
                         $$->symp = gentemp(t,"Mat_temp");
                         $$->symp->type->row=row;
                         $$->symp->type->column=col;
+                        $$->symp->size=(row*col*size_of_double+8);
                         emit(ARRR, $$->symp->name, $1->symp->name, $1->loc->name);
                       }
                 }
@@ -522,7 +537,8 @@ multiplicative_expression
         }
         else if ($1->symp->type->cat!=_MATRIX && $3->symp->type->cat==_MATRIX)
         {
-          symbolType *t=new symbolType($1->symp->type->cat,NULL,0);
+          symbolType *t=new symbolType($3->symp->type->cat,NULL,0);
+          /*cout<<"IAM IN"<<endl;*/
           row=$3->symp->type->row;
           col=$3->symp->type->column;
           $$->symp = gentemp(t,"Mat_temp");
@@ -540,6 +556,7 @@ multiplicative_expression
         {
           $$->symp->type->row=row;
           $$->symp->type->column=col;
+          $$->symp->size=(row*col*size_of_double+8);
         }
 
       string name1=$1->getSymp()->name;
@@ -583,7 +600,37 @@ additive_expression
     {
 			$$ = new Expression();
 
-      $$->setSymp(gentemp($1->getSymp()->type->cat));
+      int row,col;
+
+         if ($1->symp->type->cat!=_MATRIX && $3->symp->type->cat==_MATRIX)
+        {
+          symbolType *t=new symbolType($3->symp->type->cat,NULL,0);
+          row=$3->symp->type->row;
+          col=$3->symp->type->column;
+          $$->symp = gentemp(t,"Mat_temp");
+        }
+        else if ($1->symp->type->cat==_MATRIX && $3->symp->type->cat!=_MATRIX)
+        {
+          symbolType *t=new symbolType($1->symp->type->cat,NULL,0);
+          row=$1->symp->type->row;
+          col=$1->symp->type->column;
+          $$->symp = gentemp(t,"Mat_temp");
+        }
+        else
+			       $$->setSymp(gentemp(($1->getSymp())->type->cat));
+
+        if ($1->symp->type->cat==_MATRIX && $3->symp->type->cat!=_MATRIX)
+        {
+          $$->symp->type->row=row;
+          $$->symp->type->column=col;
+          $$->symp->size=(row*col*size_of_double)+8;
+        }
+        else if($1->symp->type->cat!=_MATRIX && $3->symp->type->cat==_MATRIX)
+        {
+          $$->symp->type->row=row;
+          $$->symp->type->column=col;
+          $$->symp->size=(row*col*size_of_double)+8;
+        }
       string res=$$->getSymp()->name;
       string name1=$1->getSymp()->name;
       string name2=$3->getSymp()->name;
@@ -595,10 +642,41 @@ additive_expression
 		if (typecheck($1->symp, $3->symp))                          // Handling Type Check
     {
 			$$ = new Expression();
-      $$->setSymp(gentemp($1->getSymp()->type->cat));
-      string res=$$->getSymp()->name;
-      string name1=$1->getSymp()->name;
-      string name2=$3->getSymp()->name;
+
+            int row,col;
+
+               if ($1->symp->type->cat!=_MATRIX && $3->symp->type->cat==_MATRIX)
+              {
+                symbolType *t=new symbolType($3->symp->type->cat,NULL,0);
+                row=$3->symp->type->row;
+                col=$3->symp->type->column;
+                $$->symp = gentemp(t,"Mat_temp");
+              }
+              else if ($1->symp->type->cat==_MATRIX && $3->symp->type->cat!=_MATRIX)
+              {
+                symbolType *t=new symbolType($1->symp->type->cat,NULL,0);
+                row=$1->symp->type->row;
+                col=$1->symp->type->column;
+                $$->symp = gentemp(t,"Mat_temp");
+              }
+              else
+      			       $$->setSymp(gentemp(($1->getSymp())->type->cat));
+
+              if ($1->symp->type->cat==_MATRIX && $3->symp->type->cat!=_MATRIX)
+              {
+                $$->symp->type->row=row;
+                $$->symp->type->column=col;
+                  $$->symp->size=(row*col*size_of_double)+8;
+              }
+              else if($1->symp->type->cat!=_MATRIX && $3->symp->type->cat==_MATRIX)
+              {
+                $$->symp->type->row=row;
+                $$->symp->type->column=col;
+                  $$->symp->size=(row*col*size_of_double)+8;
+              }
+            string res=$$->getSymp()->name;
+            string name1=$1->getSymp()->name;
+            string name2=$3->getSymp()->name;
 			emit (SUB, res, name1, name2);
 		}
 		else cout << "Type Error"<< endl;
@@ -768,7 +846,7 @@ equality_expression
       string nullstring="";
       string name1=$1->getSymp()->name;
       string name2=$3->getSymp()->name;
-      emit(NEOP, nullstring, name1, name2);                               // emit if name1!=name2 goto ___
+      emit(NEOP, name1, name2);                                           // emit if name1!=name2 goto ___
       emit (GOTOOP, nullstring);                                          // goto ___
 	;
 		}
@@ -1268,7 +1346,7 @@ initializer
                 symbolType *t=new symbolType(_MATRIX,NULL,0);
                 t->row=ro;                                                // assign the dimensions of temporary generated
                 t->column=col;
-                cout<<t->row<<endl;
+
                 symb *t1= gentemp(t,$$->init,true);
                 $$->name=t1->name;;
         }
