@@ -209,14 +209,14 @@ postfix_expression
 	| postfix_expression '[' expression ']''['expression']' {                   // Matrix type is handled here separately which includes
 		$$ = new UnaryExpr();                                                     // translating the matrix indices to appropriate memory locations
 
-		$$->setSymp( $1->symp);			// copy the base
-		$$->setType($1->type->ptr);		// type = type of element
-		$$->setLoc(new symb("",_INT));		// store computed address
+		$$->setSymp( $1->symp);			      // copy the base
+		$$->setType($1->type->ptr);		    // type = type of element
+		$$->setLoc(new symb("",_INT));	 // store computed address
 
 		if ($1->cat==_MATRIX) {
-      typeEnum ty=_INT;
-			symb* t = gentemp(ty);
- 			emit(MULT, t->name, $3->symp->name, tostr(4));
+            typeEnum ty=_INT;
+			      symb* t = gentemp(ty);
+ 			      emit(MULT, t->name, $3->symp->name, tostr(4));
             symb* t1=gentemp(_INT);
             emit(ARRR, t1->name, $1->symp->name,tostr(4));
             symb* t2=gentemp(_INT);
@@ -933,41 +933,41 @@ logical_AND_expression
   {
     $$ = $1;                                                     // copy all the Attributes including truelist and falselist
   }
-	| logical_AND_expression N AND_AND M inclusive_OR_expression
+	| logical_AND_expression  AND_AND M inclusive_OR_expression
   {
-		covertToBoolean($5);
+		covertToBoolean($4);
 
-
-		backpatch($2->nextlist, nextinstr());                        // backpatching
+/*
+		backpatch($2->nextlist, nextinstr());                        // backpatching*/
 		covertToBoolean($1);
     $$ = new Expression();
 
     $$->setIsBool(true);                                        // inclusive_OR_expression is not a conditional expression
 
-		backpatch($1->getTruelist(), $4);                           // backpatching
-		$$->setTruelist($5->getTruelist());                         // if B->B1 && B2 then B.truelist=B2.truelist
+		backpatch($1->getTruelist(), $3);                           // backpatching
+		$$->setTruelist($4->getTruelist());                         // if B->B1 && B2 then B.truelist=B2.truelist
                                                                 // And B.falselist=merge(B1.falselist,B2.falselist) which is set here.
-		$$->setFalselist (merge ($1->falselist, $5->falselist));
+		$$->setFalselist (merge ($1->falselist, $4->falselist));
 	}
 	;
 
 logical_OR_expression
 	: logical_AND_expression {$$ = $1;                        // copy all the Attributes including truelist and falselist
                             }
-	| logical_OR_expression N OR_OR M logical_AND_expression {
-		covertToBoolean($5);
+	| logical_OR_expression  OR_OR M logical_AND_expression {
+		covertToBoolean($4);
 
 		// N to convert $1 to bool
-		backpatch($2->nextlist, nextinstr());
+		/*backpatch($2->nextlist, nextinstr());*/
 		covertToBoolean($1);
     $$ = new Expression();
 
 		$$->setIsBool(true);                                        // inclusive_OR_expression is not a conditional expression
 
-		backpatch ($$->getFalselist(), $4);
-		$$->setTruelist( merge ($1->truelist, $5->truelist));     // if B->B1 || B2 then B.truelist=merge(B1.truelist,B2.truelist)
+		backpatch ($1->getFalselist(), $3);
+		$$->setTruelist( merge ($1->truelist, $4->truelist));     // if B->B1 || B2 then B.truelist=merge(B1.truelist,B2.truelist)
                                                                 // And B.falselist=meger(B2.falselist) which is set here.
-		$$->setFalselist($5->falselist);
+		$$->setFalselist($4->falselist);
 	}
 	;
 
@@ -1445,27 +1445,27 @@ expression_statement
                                           /* deals with the if statements*/
 selection_statement
 	:
- IF '(' expression N')' M statement N {
-    li n1=$4->nextlist;
-		backpatch (n1, nextinstr());                                      // backpatching
+ IF '(' expression ')' M statement N {
+    /*li n1=$4->nextlist;
+		backpatch (n1, nextinstr());                                      // backpatching*/
 
 		covertToBoolean($3);
 
 		$$ = new statement();
     li expressionList=$3->truelist;
-		backpatch (expressionList, $6);
+		backpatch (expressionList, $5);
 
-		$$->setNextlist(merge ($3->falselist, $7->nextlist,$8->nextlist));
+		$$->setNextlist(merge ($3->falselist, $6->nextlist,$7->nextlist));
 
 	}
-	| IF '(' expression N ')' M statement N ELSE M statement {
-		backpatch ($8->nextlist, nextinstr());                          // backpatching
+	| IF '(' expression  ')' M statement N ELSE M statement {
+		backpatch ($7->nextlist, nextinstr());                          // backpatching
 		covertToBoolean($3);
         $$=new statement();
-		backpatch ($3->truelist, $6);                                   // backpatching
-		backpatch ($3->falselist, $10);                                 // backpatching
-    li tmp= merge ($7->nextlist, $8->nextlist);
-    li tmp2=merge (tmp, $11->nextlist);
+		backpatch ($3->truelist, $5);                                   // backpatching
+		backpatch ($3->falselist, $9);                                 // backpatching
+    li tmp= merge ($6->nextlist, $7->nextlist);
+    li tmp2=merge (tmp, $10->nextlist);
 		$$->setNextlist(tmp2);
 	}
 	| SWITCH '(' expression ')' statement                                /* Skipped */
