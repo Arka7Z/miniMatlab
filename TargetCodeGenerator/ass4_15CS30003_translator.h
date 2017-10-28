@@ -3,6 +3,7 @@
 #include <bits/stdc++.h>
 #include <iostream>
 
+
 // Size declaration of the types
 
  #define size_of_char 1
@@ -236,7 +237,7 @@ li makelist(int);                                                               
 
 
 string int2string(int);                                                         // Converts an integer to string
-string returnTypeString(const symbolType * );                                   // For printing type structure
+string returnTypeString(const symbolType * );                                   // For printIntng type structure
 string opCodeToString(int);                                                     // Returns the operator string for opcodes such as "+","&","param"
 int calculateSizeOfType(symbolType * symp);                                     // Returns the size of a type such as char,int,double
 symb * conv(symb * symp, typeEnum type_e);                                      // To support type casting such as int2double

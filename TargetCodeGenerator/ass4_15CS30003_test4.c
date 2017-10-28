@@ -1,16 +1,16 @@
-//test file to check basic statements, expression, readi and printi library 
+//test file to check basic statements, expression, readInt and printInt library 
 //functions created in assignment 2
 //also checks the recursive fibonacci function to check the function call and return methodology
 
 
-int prints(char *c);
-int printi(int i);
-int readi(int *eP);
+int printStr(char *c);
+int printInt(int i);
+int readInt(int *eP);
 
 
 int fib(int a){
-  prints("\nEntered the function for i : ");
-  printi(a);
+  printStr("\nEntered the function for i : ");
+  printInt(a);
   int b=a-1,c,d;
   if(b<=0) return 1;
   else {
@@ -39,15 +39,15 @@ int main () {
   else {
     c = a+b;
   }
-  prints("Please enter a number for recursive fibonacci: ");
-  read = readi(&eP);
-  prints("You Entered ");
-  c = printi(read);
-  prints("\n");
+  printStr("Please enter a number for recursive fibonacci: ");
+  read = readInt(&eP);
+  printStr("You Entered ");
+  c = printInt(read);
+  printStr("\n");
 
-  prints("Now testting for recursive fibonacci number ....Entering the function\n");
+  printStr("Now testting for recursive fibonacci number ....Entering the function\n");
   int out=0;
   out=fib(read);
-  prints("\n\nReturned from recursive fibonacci function");
+  printStr("\n\nReturned from recursive fibonacci function");
 
 }

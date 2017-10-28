@@ -1451,85 +1451,93 @@ expression_statement
                                           /* deals with the if statements*/
 selection_statement
 	:
- IF '(' expression N')' M statement N {
-    li n1=$4->nextlist;
-		backpatch (n1, nextinstr());                                      // backpatching
+  IF '(' expression  ')' M statement N ELSE M statement {
+    /*cout<<" HERE\n";*/
+   backpatch ($7->nextlist, nextinstr());                          // backpatching
+   covertToBoolean($3);
+       $$=new statement();
+   backpatch ($3->truelist, $5);                                   // backpatching
+   backpatch ($3->falselist, $9);                                 // backpatching
+   li tmp= merge ($6->nextlist, $7->nextlist);
+   li tmp2=merge (tmp, $10->nextlist);
+   $$->setNextlist(tmp2);
+  }
+  |
+  IF '(' expression ')' M statement  {
+   /*li n1=$4->nextlist;
+   backpatch (n1, nextinstr());                                      // backpatching*/
+  /*cout<<"IAM HERE\n";*/
+   covertToBoolean($3);
 
-		covertToBoolean($3);
 
-		$$ = new statement();
-    li expressionList=$3->truelist;
-		backpatch (expressionList, $6);
+   $$ = new statement();
+   li expressionList=$3->truelist;
+   backpatch (expressionList, $5);
+   backpatch($3->falselist,nextinstr());
 
-		$$->setNextlist(merge ($3->falselist, $7->nextlist,$8->nextlist));
+   $$->setNextlist(merge ($3->falselist, $6->nextlist));
+   /*,$7->nextlist*/
 
-	}
-	| IF '(' expression N ')' M statement N ELSE M statement {
-		backpatch ($8->nextlist, nextinstr());                          // backpatching
-		covertToBoolean($3);
-        $$=new statement();
-		backpatch ($3->truelist, $6);                                   // backpatching
-		backpatch ($3->falselist, $10);                                 // backpatching
-    li tmp= merge ($7->nextlist, $8->nextlist);
-    li tmp2=merge (tmp, $11->nextlist);
-		$$->setNextlist(tmp2);
-	}
+  }
 	| SWITCH '(' expression ')' statement                                /* Skipped */
 
 	;
+  iteration_statement:
                                           /*  Dealing with iterations( for,while,do-while). */
-iteration_statement
-	: WHILE M '(' expression ')' M statement {
-		$$ = new statement();
-		covertToBoolean($4);
-    li statementList=$7->nextlist;
-		backpatch(statementList, $2);
-    li expressionList=$4->getTruelist();
-		backpatch(expressionList, $6);
-		$$->nextlist = $4->getFalselist();
+                                          WHILE M '(' expression ')' M statement {
+                                           $$ = new statement();
+                                           covertToBoolean($4);
+                                           li statementList=$7->nextlist;
+                                           backpatch(statementList, $2);
+                                           li expressionList=$4->getTruelist();
+                                           backpatch(expressionList, $6);
+                                           backpatch($4->getFalselist(),nextinstr());
+                                           $$->nextlist = $4->getFalselist();
 
-    string two=SSTR($2);
-		emit (GOTOOP, two);
-	}
-	| DO M statement M WHILE '(' expression ')' ';' {
-		$$ = new statement();
+                                           string two=SSTR($2);
+                                           emit (GOTOOP, two);
+                                         }
+                                         | DO M statement M WHILE '(' expression ')' ';' {
+                                           $$ = new statement();
 
-		covertToBoolean($7);
+                                           covertToBoolean($7);
 
 
-		backpatch ($7->truelist, $2);
-		backpatch ($3->nextlist, $4);
+                                           backpatch ($7->truelist, $2);
+                                           backpatch ($3->nextlist, $4);
 
-		// Some bug in the next statement
-		$$->setNextlist($7->falselist);
+                                           // Some bug in the next statement
+                                           $$->setNextlist($7->falselist);
 
-	}
-	| FOR '(' expression_statement M expression_statement ')' M statement {
-		$$ = new statement();
-		covertToBoolean($5);
-    li exp2List=$5->getTruelist();
-		backpatch (exp2List, $7);
-    li statementList=$8->nextlist;
-		backpatch (statementList, $4);
-    string four=SSTR($4);
-		emit (GOTOOP, four);
-		$$->setNextlist($5->falselist);
-	}
-	| FOR '(' expression_statement M expression_statement M expression N ')' M statement {
-		$$ = new statement();
-		covertToBoolean($5);
-    li exp2List=$5->getTruelist();
-		backpatch (exp2List, $10);
-    li nList=$8->nextlist;
-		backpatch (nList, $4);
-    li statementList=$11->nextlist;
-		backpatch (statementList, $6);
-    string six=SSTR($6);
-		emit (GOTOOP, six);
-		$$->setNextlist($5->falselist);
+                                         }
+                                         | FOR '(' expression_statement M expression_statement ')' M statement {
+                                           $$ = new statement();
+                                           covertToBoolean($5);
+                                           li exp2List=$5->getTruelist();
+                                           backpatch (exp2List, $7);
+                                           backpatch($5->getFalselist(),nextinstr()+1);
+                                           li statementList=$8->nextlist;
+                                           backpatch (statementList, $4);
+                                           string four=SSTR($4);
+                                           emit (GOTOOP, four);
+                                           $$->setNextlist($5->falselist);
+                                         }
+                                         | FOR '(' expression_statement M expression_statement M expression N ')' M statement {
+                                           $$ = new statement();
+                                           covertToBoolean($5);
+                                           li exp2List=$5->getTruelist();
+                                           backpatch (exp2List, $10);
+                                           backpatch($5->getFalselist(),nextinstr()+1);
+                                           li nList=$8->nextlist;
+                                           backpatch (nList, $4);
+                                           li statementList=$11->nextlist;
+                                           backpatch (statementList, $6);
+                                           string six=SSTR($6);
+                                           emit (GOTOOP, six);
+                                           $$->setNextlist($5->falselist);
 
-	}
-	;
+                                         }
+                                         ;
 
 jump_statement
 	: GOTO IDENTIFIER ';' {$$ = new statement();}

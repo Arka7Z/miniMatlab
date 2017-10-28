@@ -906,6 +906,7 @@ string opCodeToString (int op) {
 		case SUB:				return " - ";
 		case DIVIDE:			return " / ";
 		case EQUAL:				return " = ";
+		case EQUALSTR:    return " = ";
 		case EQOP:				return " == ";
 		case NEOP:				return " != ";
 		case LT:				return " < ";
