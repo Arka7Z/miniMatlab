@@ -93,6 +93,13 @@ enum typeEnum {                                           // Type enumeration
         _MATRIX
 };
 
+typedef union
+{
+	double d_value;
+	unsigned int d_ar[2];
+
+} d_util;
+
 //Class Declarations
 
 class symbolType {                                                              // Type and other info such as dimensions of a symbol
@@ -130,7 +137,7 @@ class symb {                                                                    
         int offset;                                                             // offset in the symbol table
         symbolTable * nest;                                                     // Pointer to nested symbol table which comes into use during function calls
         string name;                                                            // Name of the symbol
-
+        bool is_global;
         symb * initialise(string initialVal);                                   // Initialize with the initial value
         symb * initialize(string initialVal);                                   // dummy function as above
         symb(string, typeEnum type_e = _INT, symbolType * ptr = NULL, int width = 0);     // Constructor
@@ -169,6 +176,7 @@ class symbolTable {                                                             
         void computeOffsets();                                                  // Compute offset of each entry in the symbol table after the table is constructed
 
         //Getter Setter Methods for the above data members
+        bool search(string name);
         string getTableName();
         int getTempCount();
         list<symb> getTable();
@@ -235,7 +243,7 @@ void emit(opTypeEnum opL, string result, string argument1 = "", string argument2
 
 li makelist(int);                                                               // Make a new list contaninig a single entry and  return it
 
-
+bool search (string name);
 string int2string(int);                                                         // Converts an integer to string
 string returnTypeString(const symbolType * );                                   // For printIntng type structure
 string opCodeToString(int);                                                     // Returns the operator string for opcodes such as "+","&","param"
