@@ -356,6 +356,17 @@ symb* symbolTable::lookup (string name)
 	}
 }
 
+bool symbolTable::search (string name)
+{
+	symb* s=NULL;
+	traverse2(table,it)
+	{
+		if (it->name == name )
+			return true;
+	}
+	return false;
+}
+
 /*
 	Generate temporaries
 	input: type such as int,double and initial value
