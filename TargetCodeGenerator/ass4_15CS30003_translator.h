@@ -34,7 +34,7 @@ class symbolType;                                     // Type of a symbol in sym
 // Enums for opcode and type(int,double etc)
 
 enum opTypeEnum {                                      //OpCodes for the quads
-        EQUAL, EQUALSTR, EQUALCHAR,
+        EQUAL, EQUALSTR, EQUALCHAR,EQUAL_DOUBLE,
 
         // Relational Operators
         LT,
@@ -100,6 +100,12 @@ typedef union
 
 } d_util;
 
+typedef struct
+{
+	double d_value;
+	string name;
+} init_double;
+
 //Class Declarations
 
 class symbolType {                                                              // Type and other info such as dimensions of a symbol
@@ -138,6 +144,7 @@ class symb {                                                                    
         symbolTable * nest;                                                     // Pointer to nested symbol table which comes into use during function calls
         string name;                                                            // Name of the symbol
         bool is_global;
+        bool re_init;
         symb * initialise(string initialVal);                                   // Initialize with the initial value
         symb * initialize(string initialVal);                                   // dummy function as above
         symb(string, typeEnum type_e = _INT, symbolType * ptr = NULL, int width = 0);     // Constructor

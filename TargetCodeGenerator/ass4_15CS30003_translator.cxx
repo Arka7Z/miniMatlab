@@ -759,6 +759,8 @@ void quad::print ()
 				// Shift Operations
 				case LEFTSHIFT:		cout << result << " = " << argument1 << " << " << argument2;
 				break;
+						case EQUAL_DOUBLE:	cout << result << " = " << argument1;
+						break;
 				case EQUAL:			cout <<result<< " "<<"="<<" " << argument1 ;
 				break;
 				case EQUALSTR:  cout <<result<< " "<<"="<<" " << argument1 ;
@@ -917,6 +919,7 @@ string opCodeToString (int op) {
 		case SUB:				return " - ";
 		case DIVIDE:			return " / ";
 		case EQUAL:				return " = ";
+		case EQUAL_DOUBLE:		return " = ";
 		case EQUALSTR:    return " = ";
 		case EQOP:				return " == ";
 		case NEOP:				return " != ";
@@ -1033,6 +1036,7 @@ bool typecheck(symb*& s1, symb*& s2)
 */
 bool typecheck(symbolType* t1, symbolType* t2)																				// Check if the symbol types are same or not
 {
+	cout<<"TYEPCHECK"<<endl;
 	typeEnum cat1=t1->cat;
 	typeEnum cat2=t2->cat;
 	if (!(t1 == NULL && t2 == NULL) )

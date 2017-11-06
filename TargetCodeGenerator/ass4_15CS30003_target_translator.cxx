@@ -5,6 +5,7 @@
 
 extern FILE *yyin;
 extern vector<string> allstrings;
+extern vector<init_double> alldoubles;
 
 using namespace std;
 
@@ -16,7 +17,8 @@ string asmfilename="ass4_15CS30003_";		// asm file name
 string inputfile="ass4_15CS30003_test";		// input file name
 
 
-void computeActivationRecord(symbolTable* st) {
+void computeActivationRecord(symbolTable* st)
+{
 	int param = -20;
 	int local = -24;
 	for (list <symb>::iterator it = st->table.begin(); it!=st->table.end(); it++) {
@@ -62,6 +64,7 @@ void genasm() {
 	asmfile.open(asmfilename.c_str());
 
 	asmfile << "\t.file	\"test.c\"\n";
+	int global_double_count=0;
 	for (list <symb>::iterator it = table->table.begin(); it!=table->table.end(); it++) {
 		if (it->category!="function") {
 			if (it->type->cat==_CHAR) { // Global char
@@ -105,9 +108,15 @@ void genasm() {
 					d_util d_bytes;
 					d_bytes.d_value=d_tmp;
 
+					//uint32_t d_lower,d_upper;
+					//memcpy(&d_upper, &d_tmp, sizeof(d_tmp)/2);
+					//d_tmp=d_tmp<<32;
+					//memcpy(&d_lower, (&d_tmp), sizeof(d_tmp)/2);
 					asmfile << "\t.long\t" << d_bytes.d_ar[0] << "\n";
 					asmfile << "\t.long\t" << d_bytes.d_ar[1] << "\n";
 					it->is_global=true;
+
+					global_double_count++;
 				}
 				else
 				{
@@ -116,17 +125,38 @@ void genasm() {
 
 			}
 
+
 		}
 	}
-	if (allstrings.size())
+
+
+	global_double_count=global_double_count/2;
+if (allstrings.size()+alldoubles.size()-global_double_count)
+{
+	asmfile << "\t.section\t.rodata\n";
+	for (vector<string>::iterator it = allstrings.begin(); it!=allstrings.end(); it++)
 	{
-		asmfile << "\t.section\t.rodata\n";
-		for (vector<string>::iterator it = allstrings.begin(); it!=allstrings.end(); it++)
-		{
-			asmfile << ".LC" << it - allstrings.begin() << ":\n";
-			asmfile << "\t.string\t" << *it << "\n";
-		}
+
+		asmfile << ".LC" << it - allstrings.begin() << ":\n";
+		asmfile << "\t.string\t" << *it << "\n";
 	}
+	vector<init_double>::iterator it2 = alldoubles.begin();
+	it2 +=global_double_count;
+	for(;it2!=alldoubles.end();it2++)
+	{
+		//if(!it->is_global)
+		//{
+			asmfile << "\t.align 8" << endl;
+			asmfile << ".LC" << it2->name << ":\n";
+			d_util d_bytes;
+			d_bytes.d_value=it2->d_value;
+			asmfile << "\t.long\t" << d_bytes.d_ar[0] << "\n";
+			asmfile << "\t.long\t" << d_bytes.d_ar[1] << "\n";
+		//}
+	}
+}
+
+
 	asmfile << "\t.text	\n";
 
 	vector<string> params;
@@ -214,30 +244,77 @@ void genasm() {
 			else if (op==LEFTSHIFT)		asmfile << result << " = " << arg1 << " << " << arg2;
 			else if (op==RIGHTSHIFT)		asmfile << result << " = " << arg1 << " >> " << arg2;
 
-			else if (op==EQUAL)	{
+			else if (op==EQUAL)
+			{
 				s=arg1;
 				bool flag=true;
-				if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) flag=false ;
-				else{
+				if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+')))
+					flag=false ;
+				else
+				{
 					char * p ;
 					strtol(s.c_str(), &p, 10) ;
-					if(*p == 0) flag=true ;
-					else flag=false;
+					if(*p == 0)
+						flag=true ;
+					else
+						flag=false;
 				}
-				if (flag)
+				if(flag)
+				{
 					asmfile << "movl\t$" << atoi(arg1.c_str()) << ", " << "%eax" << endl;
+					asmfile << "\tmovl\t%eax, " << table->ar[result] << "(%rbp)" << endl;
+				}
 				else
-					asmfile << "movl\t" << table->ar[arg1] << "(%rbp), " << "%eax" << endl;
-				asmfile << "\tmovl \t%eax, " << table->ar[result] << "(%rbp)";
+				{
+					if(table->lookup(result)->type->cat==PTR)
+					{
+						if(table->lookup(result)->type->ptr!=NULL && table->lookup(result)->type->ptr->cat==_CHAR)
+						{
+							asmfile << "movq\t" << table->ar[arg1] << "(%rbp), " << "%rax" << endl;
+							asmfile << "\tmovq\t%rax, " << table->ar[result] << "(%rbp)"<<endl;
+						}
+						else
+						{
+							asmfile << "movl\t" << table->ar[arg1] << "(%rbp), " << "%eax" << endl;
+							asmfile << "\tmovl\t%eax, " << table->ar[result] << "(%rbp)"<<endl;
+						}
+					}
+					else if(table->lookup(result)->type->cat==_DOUBLE)
+					{
+						asmfile << "movq\t" << table->ar[arg1] << "(%rbp), " << "%rax" << endl;
+						asmfile << "\tmovq\t%rax, " << table->ar[result] << "(%rbp)"<<endl;
+					}
+					else
+					{
+						asmfile << "movl\t" << table->ar[arg1] << "(%rbp), " << "%eax" << endl;
+						asmfile << "\tmovl\t%eax, " << table->ar[result] << "(%rbp)"<<endl;
+					}
+				}
+
+				//asmfile << "\tmovq\t%rax, " << table->ar[result] << "(%rbp)"<<endl;
+				if((globalSymbolTable->search(result) && globalSymbolTable->lookup(result)->is_global))
+				{
+					asmfile << "\tmovq\t%rax, " << result << "(%rip)";
+					globalSymbolTable->lookup(result)->re_init=true;
+				}
+
 			}
-			else if (op==EQUALSTR)	{
+
+			else if(op==EQUAL_DOUBLE)
+			{
+				asmfile << "movq\t" <<".LC"<< result << "(%rip), " << "%rax" << endl;
+				asmfile << "\tmovq \t%rax, " << table->ar[result] << "(%rbp)";
+			}
+			else if (op==EQUALSTR)
+			{
 				asmfile << "movq \t$.LC" << arg1 << ", " << table->ar[result] << "(%rbp)";
 			}
 			else if (op==EQUALCHAR)	{
 				asmfile << "movb\t$" << atoi(arg1.c_str()) << ", " << table->ar[result] << "(%rbp)";
 			}
 			// Relational Operations
-			else if (op==EQOP) {
+			else if (op==EQOP)
+			{
 				asmfile << "movl\t" << table->ar[arg1] << "(%rbp), %eax\n";
 				asmfile << "\tcmpl\t" << table->ar[arg2] << "(%rbp), %eax\n";
 				asmfile << "\tje .L" << (2*labelCount+labelMap.at(atoi( result.c_str() )) +2 );
@@ -290,7 +367,9 @@ void genasm() {
 			}
 			else if (op==BINARYNOT)		asmfile << result 	<< " = ~" << arg1;
 			else if (op==LNOT)			asmfile << result 	<< " = !" << arg1;
-			else if (op==ARRR) {
+
+			else if (op==ARRR)
+			{
 				int off=0;
 				off=theMap[arg2]*(-1)+table->ar[arg1];
 				asmfile << "movq\t" << off << "(%rbp), "<<"%rax" << endl;
@@ -302,7 +381,9 @@ void genasm() {
 				asmfile << "movq\t" << table->ar[arg2] << "(%rbp), "<<"%rdx" << endl;
 				asmfile << "\tmovq\t" << "%rdx, " << off << "(%rbp)";
 			}
-			else if (op==_RETURN) {
+
+			else if (op==_RETURN)
+			{
 				if(result!="") asmfile << "movl\t" << table->ar[result] << "(%rbp), "<<"%eax";
 				else asmfile << "nop";
 			}
@@ -310,8 +391,7 @@ void genasm() {
 				params.push_back(result);
 			}
 
-
-			else if (op==CALL)
+            else if (op==CALL)
 			{
 				// Function Table
 				symbolTable* t = globalSymbolTable->lookup(arg1)->nest;
@@ -324,9 +404,16 @@ void genasm() {
 					{
 						if(j==0)
 						{
-							if(table->lookup(params[i])->category=="temp" && table->search(params[i]) && table->lookup(params[i])->type->cat==PTR)
+							if(table->search(params[i]) && table->lookup(params[i])->type->cat==_DOUBLE)
 							{
+								asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+								asmfile << "\tmovsd \t" << table->ar[params[i]] << "(%rbp), " << "%xmm0" << endl;
+								asmfile << "\tcvtsd2ss\t" << "%xmm0, " << "%xmm0" <<endl;
+								//asmfile << "\tmovss\t" << "%xmm0, " << "%xmm0" <<endl;
 
+							}
+							else if(table->lookup(params[i])->category=="temp" && table->search(params[i]) && table->lookup(params[i])->type->cat==PTR)
+							{
 								///cout<<"here"<<endl;
 								asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
 								asmfile << "\tmovq \t" << table->ar[params[i]] << "(%rbp), " << "%rdi" << endl;
@@ -340,8 +427,7 @@ void genasm() {
 							{
 								asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
 								asmfile << "\tmovsd \t" << params[i] << "(%rip), " << "%xmm0" << endl;
-								asmfile << "\tcvtsd2ss\t" << "%xmm0, " << "%xmm1" <<endl;
-								asmfile << "\tmovss\t" << "%xmm1, " << "%xmm0" <<endl;
+								asmfile << "\tcvtsd2ss\t" << "%xmm0, " << "%xmm0" <<endl;
 							}
 							else
 							{
@@ -367,8 +453,7 @@ void genasm() {
 							{
 								asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
 								asmfile << "\tmovsd \t" << params[i] << "(%rip), " << "%xmm1" << endl;
-								asmfile << "\tcvtsd2ss\t" << "%xmm1, " << "%xmm2" <<endl;
-								asmfile << "\tmovss\t" << "%xmm2, " << "%xmm1" <<endl;
+								asmfile << "\tcvtsd2ss\t" << "%xmm1, " << "%xmm1" <<endl;
 
 							}
 							else
@@ -395,8 +480,7 @@ void genasm() {
 							{
 								asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
 								asmfile << "\tmovsd \t" << params[i] << "(%rip), " << "%xmm2" << endl;
-								asmfile << "\tcvtsd2ss\t" << "%xmm2, " << "%xmm3" <<endl;
-								asmfile << "\tmovss\t" << "%xmm3, " << "%xmm2" <<endl;
+								asmfile << "\tcvtsd2ss\t" << "%xmm2, " << "%xmm2" <<endl;
 
 							}
 							else
@@ -419,12 +503,128 @@ void genasm() {
 							asmfile << "\tmovq \t" << table->ar[params[i]] << "(%rbp), " << "%rdi" << endl;
 						}
 					}
-					else break;
+					else
+						break;
 				}
 				params.clear();
 				asmfile << "\tcall\t"<< arg1 << endl;
 				asmfile << "\tmovl\t%eax, " << table->ar[result] << "(%rbp)";
 			}
+
+			// else if (op==CALL)
+			// {
+			// 	// Function Table
+			// 	symbolTable* t = globalSymbolTable->lookup(arg1)->nest;
+			// 	int i,j=0;	// index
+			// 	for (list <symb>::iterator it = t->table.begin(); it!=t->table.end(); it++)
+			// 	{
+			// 		i = distance ( t->table.begin(), it);
+			//
+			// 		if (it->category== "param")
+			// 		{
+			// 			if(j==0)
+			// 			{
+			// 				if(table->lookup(params[i])->category=="temp" && table->search(params[i]) && table->lookup(params[i])->type->cat==PTR)
+			// 				{
+			//
+			// 					///cout<<"here"<<endl;
+			// 					asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 					asmfile << "\tmovq \t" << table->ar[params[i]] << "(%rbp), " << "%rdi" << endl;
+			// 				}
+			// 				else if(globalSymbolTable->lookup(params[i])->is_global && globalSymbolTable->lookup(params[i])->type->cat==_INT)
+			// 				{
+			// 					asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 					asmfile << "\tmovl \t" << params[i] << "(%rip), " << "%edi" << endl;
+			// 				}
+			// 				else if(globalSymbolTable->lookup(params[i])->is_global && globalSymbolTable->lookup(params[i])->type->cat==_DOUBLE)
+			// 				{
+			// 					asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 					asmfile << "\tmovsd \t" << params[i] << "(%rip), " << "%xmm0" << endl;
+			// 					asmfile << "\tcvtsd2ss\t" << "%xmm0, " << "%xmm1" <<endl;
+			// 					asmfile << "\tmovss\t" << "%xmm1, " << "%xmm0" <<endl;
+			// 				}
+			// 				else
+			// 				{
+			// 					asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 					asmfile << "\tmovq \t" << table->ar[params[i]] << "(%rbp), " << "%rdi" << endl;
+			// 				}
+			// 				//asmfile << "\tmovl \t%eax, " << (t->ar[it->name]-8 )<< "(%rsp)\n\t";
+			// 				j++;
+			// 			}
+			// 			else if(j==1)
+			// 			{
+			// 				if(table->search(params[i]) && table->lookup(params[i])->type->cat==PTR)
+			// 				{
+			// 					asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 					asmfile << "\tmovq \t" << table->ar[params[i]] << "(%rbp), " << "%rdi" << endl;
+			// 				}
+			// 				else if(globalSymbolTable->lookup(params[i])->is_global && globalSymbolTable->lookup(params[i])->type->cat==_INT)
+			// 				{
+			// 					asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 					asmfile << "\tmovq \t" << params[i] << "(%rip), " << "%rsi" << endl;
+			// 				}
+			// 				else if(globalSymbolTable->lookup(params[i])->is_global && globalSymbolTable->lookup(params[i])->type->cat==_DOUBLE)
+			// 				{
+			// 					asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 					asmfile << "\tmovsd \t" << params[i] << "(%rip), " << "%xmm1" << endl;
+			// 					asmfile << "\tcvtsd2ss\t" << "%xmm1, " << "%xmm2" <<endl;
+			// 					asmfile << "\tmovss\t" << "%xmm2, " << "%xmm1" <<endl;
+			//
+			// 				}
+			// 				else
+			// 				{
+			// 				asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 				asmfile << "\tmovq \t" << table->ar[params[i]] << "(%rbp), " << "%rsi" << endl;
+			// 				}
+			// 				//asmfile << "\tmovl \t%eax, " << (t->ar[it->name]-8 )<< "(%rsp)\n\t";
+			// 				j++;
+			// 			}
+			// 			else if(j==2)
+			// 			{
+			// 				if(table->search(params[i]) && table->lookup(params[i])->type->cat==PTR)
+			// 				{
+			// 					asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 					asmfile << "\tmovq \t" << table->ar[params[i]] << "(%rbp), " << "%rdi" << endl;
+			// 				}
+			// 				else if(globalSymbolTable->lookup(params[i])->is_global && globalSymbolTable->lookup(params[i])->type->cat==_INT)
+			// 				{
+			// 					asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 					asmfile << "\tmovq \t" << params[i] << "(%rip), " << "%rdx" << endl;
+			// 				}
+			// 				else if(globalSymbolTable->lookup(params[i])->is_global && globalSymbolTable->lookup(params[i])->type->cat==_DOUBLE)
+			// 				{
+			// 					asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 					asmfile << "\tmovsd \t" << params[i] << "(%rip), " << "%xmm2" << endl;
+			// 					asmfile << "\tcvtsd2ss\t" << "%xmm2, " << "%xmm3" <<endl;
+			// 					asmfile << "\tmovss\t" << "%xmm3, " << "%xmm2" <<endl;
+			//
+			// 				}
+			// 				else
+			// 				{
+			// 					asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 					asmfile << "\tmovq \t" << table->ar[params[i]] << "(%rbp), " << "%rdx" << endl;
+			// 				}
+			// 				//asmfile << "\tmovl \t%eax, " << (t->ar[it->name]-8 )<< "(%rsp)\n\t";
+			// 				j++;
+			// 			}
+			// 			else if(j==3)
+			// 			{
+			// 				asmfile << "movl \t" << table->ar[params[i]] << "(%rbp), " << "%eax" << endl;
+			// 				asmfile << "\tmovq \t" << table->ar[params[i]] << "(%rbp), " << "%rcx" << endl;
+			// 				//asmfile << "\tmovl \t%eax, " << (t->ar[it->name]-8 )<< "(%rsp)\n\t";
+			// 				j++;
+			// 			}
+			// 			else
+			// 			{
+			// 				asmfile << "\tmovq \t" << table->ar[params[i]] << "(%rbp), " << "%rdi" << endl;
+			// 			}
+			// 		}
+			// 		else break;
+			// 	}
+			// 	params.clear();
+			// 	asmfile << "\tcall\t"<< arg1 << endl;
+			// 	asmfile << "\tmovl\t%eax, " << table->ar[result] << "(%rbp)";
+			// }
 
 			// else if (op==CALL)
 			// {
