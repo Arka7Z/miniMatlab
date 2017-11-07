@@ -607,7 +607,7 @@ multiplicative_expression
 
 additive_expression
  : multiplicative_expression {$$ = $1;}
- | additive_expression '+' multiplicative_expression
+ | additive_expression '+' multiplicative_expression                         // change to
  {
    if (typecheck($1->symp, $3->symp))                          // Handling Type Check
    {

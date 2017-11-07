@@ -14,8 +14,11 @@ identifier 				    [_a-zA-Z_][a-zA-Z0-9_]*
 nonzero-digit		       [1-9]
 E					            ([Ee][+-]?{Digit}+)
 integer-constant		[1-9][0-9]*|0
-floating-constant 		[-+]?[0-9]+[eE][-+]?[0-9]+|[-+]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?|[-+]?[0-9]+\.([eE][-+]?[0-9]+)?
 
+IC 					{nonzero-digit}{Digit}*
+ZC					"0"
+FC 					({FRC}{E}?)|({Digit}+{E})
+FRC 				(({Digit}+)?\.{Digit}+)|(({Digit}+)\.)
 character-constant		\'(\\.|[^\\'\n])*\'
 Comments				"/*"([^*]|\*+[^*/])*\*+"/"|"//"(.)*
 string-literal			\"(\\.|[^\\"\n])*\"
@@ -64,7 +67,9 @@ whitespace				[ \t\v\r\f\n]
 					return IDENTIFIER;  }
 {integer-constant} 			{ 	yylval.integer_value = atoi(yytext);
 					return INT_CONSTANT; }
-{floating-constant} 			{ 	yylval.string_Value = yytext;
+{FRC} 			{ 	yylval.string_Value = yytext;
+															/*string temp_val=yytext;
+															cout<<"FLOAT "<<temp_val<<" "<endl;*/
 					                     return FLOAT_CONSTANT; }
 {character-constant} 			{ 		yylval.charConst=yytext;
 																return CHAR_CONSTANT; }

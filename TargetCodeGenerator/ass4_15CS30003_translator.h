@@ -51,6 +51,7 @@ enum opTypeEnum {                                      //OpCodes for the quads
         SUB,
         MULT,
         DIVIDE,
+
         RIGHTSHIFT,
         LEFTSHIFT,
         MODULUS,
