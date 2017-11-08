@@ -22,15 +22,33 @@ void computeActivationRecord(symbolTable* st)
 	int param = -20;
 	int local = -24;
 	for (list <symb>::iterator it = st->table.begin(); it!=st->table.end(); it++) {
-		if (it->category =="param") {
+		if (it->category =="param")
+		{
 			st->ar [it->name] = param;
 			param +=it->size;
 		}
 		else if (it->name=="return") continue;
-		else {
+
+		else
+		{
+			if(it->type->cat==_MATRIX )
+			{
+				st->ar[it->name]=local-it->size+8;
+				local -= it->size;
+				// st->ar[it->name] = local ;
+				// local -=it->size;
+
+			}
+			else
+			{
 			st->ar [it->name] = local;
 			local -=it->size;
+			}
 		}
+	}
+		for (list <symb>::iterator it = st->table.begin(); it!=st->table.end(); it++)
+	{
+		cout<<it->name<<"  ar "<<st->ar[it->name]<<endl;
 	}
 }
 
@@ -462,6 +480,11 @@ else
 
 
 			}
+			else if(op==INIT_MAT)
+{
+	asmfile << "movq\t" << table->ar[arg2] << "(%rbp), %rdx" << endl;
+	asmfile << "\tmovq\t%rdx, " << table->ar[result]+atoi(arg1.c_str()) << "(%rbp)" << endl;
+}
 
 			else if (op==_RETURN)
 			{
@@ -676,6 +699,7 @@ int main(int ac, char* av[]) {
 	yyparse();
 	globalSymbolTable->computeOffsets();
 	globalSymbolTable->print(1);
+	quadArray.printtab();
 	quadArray.print();
 	genasm();
 }

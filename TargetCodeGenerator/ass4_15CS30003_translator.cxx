@@ -298,7 +298,7 @@ int calculateSizeOfType (symbolType* t)																					// Input: type objec
 					case PTR:
 							return size_of_pointer;
 					case _MATRIX:
-							return (t->row *t->column*size_of_double+8);											// computing matrix size with the given dimensions
+							return (t->row *t->column*size_of_double);											// computing matrix size with the given dimensions
 					case FUNC:
 							return 0;
 				}
@@ -377,6 +377,7 @@ bool symbolTable::search (string name)
 */
 symb* gentemp (typeEnum t, string init)
 {
+
 	char name[20];
 	sprintf(name, "t%02d", table->tempCount);
 	table->tempCount++;
@@ -407,6 +408,7 @@ symb* gentemp (typeEnum t, string init)
 */
 symb* gentemp (symbolType* t, string init,bool decl)
 {
+
 			char n[20];																																// Name of the temporary.Format: t[0-9]*
 			typeEnum category=t->cat;
 			sprintf(n, "t%02d", table->tempCount++);
@@ -568,12 +570,16 @@ void symbolTable::computeOffsets()
 				}
 				else
 				{
+					if(it->type->cat==_MATRIX)
+					{
 						it->offset = off;
-						//int runOffset=it->offset;
-						int currentSize=it->size;
-						//off += runOffset ;
-						off +=  currentSize;
-						// cout<<it->size<<" "<<off<<endl;
+						off = it->offset + it->size;
+					}
+					else
+					{
+						it->offset = off;
+						off = it->offset + it->size;
+					}
 				}
 				if (it->nest!=NULL)																											// Store the nested tables as well
 					tableList.push_back (it->nest);
@@ -739,6 +745,7 @@ void quad::print ()
 				case PTRL:			cout << "*" << result	<< " = " << argument1 ;		break;
 				case UNARYMINUS:		cout << result 	<< " = -" << argument1;				break;
 				case FUNC:			cout << result << ": ";					break;
+				case INIT_MAT:		cout << result << "[" << argument1 << "]" << "=" << argument2; 			break;
 				// Binary Operations
 				case XOR:			cout << result << " = " << argument1 << " ^ " << argument2;				break;
 				case MODULUS:			cout << result << " = " << argument1 << " % " << argument2;				break;
@@ -909,6 +916,8 @@ string opCodeToString (int op) {
 		case BINARYNOT:				return " ~";
 		case CALL: 				return " call ";
 		case ARRR:	 			return " =[]R";
+		case ARRL:        return "=[]L";
+		case INIT_MAT:			return " []=";
 		case _RETURN: 			return " ret";
 		case PTRL:				return " *L";
 		case PARAM: 			return " param ";

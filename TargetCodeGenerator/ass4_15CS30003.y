@@ -215,7 +215,7 @@ postfix_expression
    $$ = new UnaryExpr ();
    $$->setSymp( $1->symp);
    $$->setLoc($$->symp);
-   $$->setType( $1->symp->type);
+$$->setType( $1->symp->type);
        $$->setCat($$->type->cat);
  }
  | postfix_expression '[' expression ']''['expression']' {                   // Matrix type is handled here separately which includes
@@ -223,12 +223,27 @@ postfix_expression
 
    $$->setSymp( $1->symp);			// copy the base
    $$->setType($1->type->ptr);		// type = type of element
-   $$->setLoc(new symb("",_INT));		// store computed address
+
+  $$->setLoc(new symb("",_INT));		// store computed address
 
    if ($1->cat==_MATRIX) {
      typeEnum ty=_INT;
      symb* t = gentemp(ty);
-     emit(MULT, t->name, $3->symp->name, tostr(4));
+
+      int colSize=(table->lookup($1->symp->name))->type->column;
+      symb* p=gentemp(ty);
+      emit(MULT, p->name, $3->symp->name, tostr(8*colSize));
+      //symb* p1=gentemp(ty);
+    //  emit(ADD,p1->name,$1->symp->name,p->name);
+      symb* p2=gentemp(ty);
+      emit(MULT, p2->name, $6->symp->name, tostr(8));
+      symb* p3=gentemp(ty);
+      emit(ADD,p3->name,p->name,p2->name);
+
+      symb* useles=gentemp(_DOUBLE);
+
+
+           /*emit(MULT, t->name, $3->symp->name, tostr(4));
            symb* t1=gentemp(_INT);
            emit(ARRR, t1->name, $1->symp->name,tostr(4));
            symb* t2=gentemp(_INT);
@@ -240,11 +255,12 @@ postfix_expression
            symb* t5=gentemp(_INT);
            emit(ADD, t5->name,t3->name, t4->name);
            symb* t6=gentemp(_INT);
-           emit(ADD, t6->name,t5->name,tostr(8));                              //t8=t7+t8
-           $$->loc->name=t6->name;
+           emit(ADD, t6->name,t5->name,tostr(8));                              //t8=t7+t8*/
+
+           $$->loc->name=p3->name;
            $$->setCat(_MATRIX);
                $$->getSymp()->type->cat=_MATRIX;
-               $$->type->cat=_DOUBLE;
+               //$$->type->cat=_DOUBLE;
 
    }
    else {
@@ -253,7 +269,9 @@ postfix_expression
 
    $$->setCat(_MATRIX);
        $$->getSymp()->type->cat=_MATRIX;
-       $$->type->cat=_DOUBLE;
+       /*$$->type->cat=_DOUBLE;*/
+
+
 
  }
  | postfix_expression '(' ')'
@@ -499,18 +517,18 @@ multiplicative_expression
            if (transRUN==false)
 
               {
-                    if ($1->type->cat==_DOUBLE)
-                    {
+                    /*if ($1->type->cat==_DOUBLE)
+                    {*/
 
                       $$->symp=gentemp(_DOUBLE);
                      emit(ARRR, $$->symp->name, $1->symp->name, $1->loc->name);
 
-                     }
+                     /*}
                      else
                      {
                        symbolType *t=new symbolType($1->cat,NULL,0);
                        /*cout<<"I am here"<<endl;*/
-                       t->row=($1->symp->type->row);
+                       /*t->row=($1->symp->type->row);
                        t->column=($1->symp->type->column);
                        int row=t->row;
                        int col=t->column;
@@ -519,7 +537,7 @@ multiplicative_expression
                        $$->symp->type->column=col;
                        $$->symp->size=(row*col*size_of_double+8);
                        emit(ARRR, $$->symp->name, $1->symp->name, $1->loc->name);
-                     }
+                     }*/
                }
            else
                {
@@ -632,7 +650,7 @@ additive_expression
        }
        else
             {$$->setSymp(gentemp(($1->getSymp())->type->cat));
-              cout<<"HERE"<<endl;
+              //cout<<"HERE"<<endl;
             }
 
        if ($1->symp->type->cat==_MATRIX && $3->symp->type->cat!=_MATRIX)
@@ -1050,7 +1068,7 @@ assignment_expression
  }
  | unary_expression assignment_operator assignment_expression {
    typeEnum category=$1->getCat();
-   cout<<"UNARY"<<endl;
+
                                                /*
                                                The case where the LHS of the assignment_expression is a matrix (within it,
                                                whether a transpose operation is being handled) or pointer is dealt with separately
@@ -1058,14 +1076,15 @@ assignment_expression
 
    if (category==_MATRIX)
    {
-       $3->symp = conv($3->symp, $1->type->cat);
-       if (transRUN==false)
+     cout<<" name name "<<$1->symp->name<<" "<<" "<<$1->loc->name<<" "<<$3->symp->name<<endl;
+      $3->symp = conv($3->symp, $1->type->cat);
+       /*if (transRUN==false)*/
            emit(ARRL, $1->symp->name, $1->loc->name, $3->symp->name);
-       else
+       /*else
            {
                  emit(EQUAL, $1->symp->name,$3->symp->name);
                  transRUN=false;
-           }
+           }*/
    }
 
    else if(category==PTR)
@@ -1076,11 +1095,12 @@ assignment_expression
    }
    else
    {
+     //cout<<" name name "<<$1->symp->name<<" "<<$3->symp->name<<endl;
      $3->symp = conv($3->symp, $1->symp->type->cat);
      emit(EQUAL, $1->symp->name, $3->symp->name);
    }
    $$ = $3;
-   cout<<"END END"<<endl;
+
  }
  ;
                                /*The different assignment operators such as =,/= etc
@@ -1128,9 +1148,25 @@ init_declarator
  }
  | declarator '=' initializer {
 
-   if ($3->init!="") $1->initialize($3->init);
-       //if ($1->type->cat!=_MATRIX)
-   emit (EQUAL, $1->name, $3->name);
+   if($1->type->cat==_MATRIX)
+ {
+
+
+   $1->mat_init_col_list=$3->mat_init_col_list;
+   for(int ii=0;ii<$1->mat_init_col_list.size();ii++)
+   {
+     for(int jj=0;jj<$1->mat_init_col_list[ii].size();jj++)
+     {
+       //cout << "( " << $1->mat_init_col_list[ii][jj].first <<","<<$1->mat_init_col_list[ii][jj].second <<") | ";
+       emit(INIT_MAT,$1->name,(ii*$1->mat_init_col_list[ii].size()+jj)*8,$1->mat_init_col_list[ii][jj].first);
+     }
+
+   }
+ }
+
+    if ($3->init!="") $1->initialize($3->init);
+   if ($1->type->cat!=_MATRIX)
+    emit (EQUAL, $1->name, $3->name);
 
 
  }
@@ -1204,23 +1240,7 @@ direct_declarator
          $$ = $1->update(s);
 
      }
- | direct_declarator '[' ']' {
-   symbolType * t = $1 -> type;
-   symbolType * prev = NULL;
 
-   for(;t->cat==ARR;prev=t,t=t->ptr)
-   ;
-   if (prev==NULL)
-   {
-     symbolType* s = new symbolType(ARR, $1->type, 0);
-     int y = calculateSizeOfType(s);
-     $$ = $1->update(s);
-   }
-   else {
-     prev->ptr =  new symbolType(ARR, t, 0);
-     $$ = $1->update ($1->type);
-   }
- }
  | direct_declarator '['   assignment_expression ']' | direct_declarator '['  '*' ']'
  | direct_declarator '(' CST parameter_type_list ')'
  {
@@ -1314,13 +1334,30 @@ initializer_row_list:
                initializer_row
                { $$=$1;    }
            |   initializer_row_list ';' initializer_row
-               {   rowison=true;
-                   $$=$1;
-                   $$->init=$1->init+";"+$3->init;}
+               {   rowison=false;
+                  // $$=new symb();
+                  traverse2($$->mat_init_row_list,it)
+                   cout<<"row 1"<< it->first<<" "<<it->second<<endl;
+
+                   traverse2($3->mat_init_row_list,it)
+                    cout<<"row 3"<< it->first<<" "<<it->second<<endl;
+
+                   $$->mat_init_col_list.push_back($$->mat_init_row_list);
+                   $$->mat_init_col_list.push_back($3->mat_init_row_list);
+
+                   traverse2($$->mat_init_row_list,it)
+                    cout<<"row 2"<< it->first<<" "<<it->second<<endl;
+
+
+ $$->mat_init.append(";");
+ $$->mat_init.append($3->mat_init);}
        ;
 initializer_row
  : initializer
-       {   $$=$1;
+       {// $$=$1;
+         pair <string , int > p_tmp ($1->name,0);
+		$$->row_maj_index=0;
+		$$->mat_init_row_list.push_back(p_tmp);
        }
  | designation initializer
        {
@@ -1329,8 +1366,15 @@ initializer_row
  | initializer_row ',' initializer
        {
 
-           $$=$1;
-           $$->init=$1->init+","+$3->init;
+          // $$=$1;
+           $$->row_maj_index++;
+ pair <string , int > p_tmp ($3->name,$$->row_maj_index);
+ $$->mat_init_row_list.push_back(p_tmp);
+
+
+
+ $$->mat_init.append(",");
+ $$->mat_init.append($3->mat_init);
        }
 
  ;
@@ -1343,8 +1387,8 @@ initializer
                                    /* the initial value string of the matrix is parsed to assign proper dimensions to the temporary*/
 
              $$=$3;
-             string initial="{"+$3->init+"}";
-             $$->init=initial;
+             /*string initial="{"+$3->init+"}";
+            // $$->init=initial;
              string rowS=$3->init;
 
               int ro=1,col=1;
@@ -1366,13 +1410,13 @@ initializer
                t->column=col;
 
                symb *t1= gentemp(t,$$->init,true);
-               $$->name=t1->name;;
+               $$->name=t1->name;;*/
        }
 
  ;
 
 empty_token:    %empty  {
-                 rowison=true;
+                 rowison=false;
                }
 
 

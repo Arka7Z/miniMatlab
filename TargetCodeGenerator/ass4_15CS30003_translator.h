@@ -45,6 +45,7 @@ enum opTypeEnum {                                      //OpCodes for the quads
         NEOP,
         GOTOOP,
         _RETURN,
+        INIT_MAT,
 
         // Arithmetic Operators
         ADD,
@@ -141,11 +142,15 @@ class symb {                                                                    
         string category;                                                        // local, temp or global
         int size;                                                               // Size of the  symbol
         int row, column;
-        int offset;                                                             // offset in the symbol table
+        int offset;
+        string mat_init;                                                          // offset in the symbol table
         symbolTable * nest;                                                     // Pointer to nested symbol table which comes into use during function calls
         string name;                                                            // Name of the symbol
         bool is_global;
         bool re_init;
+        int row_maj_index;
+        vector < vector < pair <string , int > > > mat_init_col_list;
+        vector< pair < string, int> > mat_init_row_list;
         symb * initialise(string initialVal);                                   // Initialize with the initial value
         symb * initialize(string initialVal);                                   // dummy function as above
         symb(string, typeEnum type_e = _INT, symbolType * ptr = NULL, int width = 0);     // Constructor
@@ -154,7 +159,10 @@ class symb {                                                                    
 
         friend ostream & operator << (ostream & ,const symb * );
         symb * linkst(symbolTable * t);                                         // Sets nesed symbol table during funciton calculateSizeOfType
-
+        symb()
+        {
+          
+        }
         //Getter Setter Methods
         string getName();
         string getInit();
