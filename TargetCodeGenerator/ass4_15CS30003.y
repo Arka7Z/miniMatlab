@@ -11,6 +11,8 @@
  extern bool rowison;
  vector <string> allstrings;
  vector <init_double> alldoubles;
+ map<string,string> tempMat;
+ map<string, vector<string> > addMap;
  /*
  Explanation of Attributes:
  ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -146,6 +148,7 @@ primary_expression                                                    // reduces
  |IDENTIFIER
  {
    $$ = new Expression();
+   $$->foundBracket=false;
    $$->symp = $1;
    $$->isbool = isFalse();
  }
@@ -243,33 +246,19 @@ $$->setType( $1->symp->type);
       symb* useles=gentemp(_DOUBLE);
 
 
-           /*emit(MULT, t->name, $3->symp->name, tostr(4));
-           symb* t1=gentemp(_INT);
-           emit(ARRR, t1->name, $1->symp->name,tostr(4));
-           symb* t2=gentemp(_INT);
-           emit(SUB,t2->name,t->name,tostr(4));
-           symb* t3=gentemp(_INT);
-           emit(MULT, t3->name, t2->name, t1->name);                           //t5=t4*T3
-           symb* t4=gentemp(_INT);
-           emit(MULT, t4->name, $6->symp->name, tostr(4));                     //t6=i*4
-           symb* t5=gentemp(_INT);
-           emit(ADD, t5->name,t3->name, t4->name);
-           symb* t6=gentemp(_INT);
-           emit(ADD, t6->name,t5->name,tostr(8));                              //t8=t7+t8*/
-
            $$->loc->name=p3->name;
            $$->setCat(_MATRIX);
                $$->getSymp()->type->cat=_MATRIX;
-               //$$->type->cat=_DOUBLE;
+              $$->foundBracket=true;
 
    }
    else {
      emit(MULT, ($$->getLoc())->name, $3->symp->name, int2string(calculateSizeOfType($$->type)));
    }
+  $$->foundBracket=true;
 
    $$->setCat(_MATRIX);
        $$->getSymp()->type->cat=_MATRIX;
-       /*$$->type->cat=_DOUBLE;*/
 
 
 
@@ -355,7 +344,13 @@ argument_expression_list
 unary_expression
  : postfix_expression
    {                                                                         // Unary Expressions are handled here and matrix elements have been handled separately
-   $$ = $1;                                                                 // where necessary as they need access to the temporary(in loc) that stores the index translation.
+     bool initBracket;
+     initBracket=$1->foundBracket;                                                                          // Copy all the Attributes
+    $$ = $1;
+    $$->foundBracket=$1->foundBracket;
+
+    $1->foundBracket=initBracket;                                              // where necessary as they need access to the temporary(in loc) that stores the index translation.
+
  }
  | INCREMENT unary_expression
    {
@@ -491,8 +486,14 @@ unary_operator
 
 cast_expression
  : unary_expression
-  {                                                                            // Copy all the Attributes
+  {
+    bool initBracket;
+    initBracket=$1->foundBracket;                                                                          // Copy all the Attributes
    $$ = $1;
+   $$->foundBracket=$1->foundBracket;
+
+   $1->foundBracket=initBracket;
+
  }
 
  ;
@@ -506,6 +507,12 @@ multiplicative_expression
        {
          cout<<"multiplicative_expression->CAST"<<endl;
    $$ = new Expression();
+   bool initBracket;
+   initBracket=$1->foundBracket;                                                                          // Copy all the Attributes
+
+  $$->foundBracket=$1->foundBracket;
+
+  $1->foundBracket=initBracket;
    typeEnum catTemp=$1->getCat();
    if ($1->cat==_MATRIX)
    {                                                             // Matrix
@@ -517,40 +524,76 @@ multiplicative_expression
            if (transRUN==false)
 
               {
-                    /*if ($1->type->cat==_DOUBLE)
-                    {*/
+                    if ($1->foundBracket)
+                    {
 
                       $$->symp=gentemp(_DOUBLE);
                      emit(ARRR, $$->symp->name, $1->symp->name, $1->loc->name);
+                     initBracket=$1->foundBracket;                                                                          // Copy all the Attributes
 
-                     /*}
+                    $$->foundBracket=$1->foundBracket;
+
+                    $1->foundBracket=initBracket;
+
+                     }
                      else
                      {
-                       symbolType *t=new symbolType($1->cat,NULL,0);
-                       /*cout<<"I am here"<<endl;*/
-                       /*t->row=($1->symp->type->row);
-                       t->column=($1->symp->type->column);
-                       int row=t->row;
-                       int col=t->column;
-                       $$->symp = gentemp(t,"Mat_temp");
-                       $$->symp->type->row=row;
-                       $$->symp->type->column=col;
-                       $$->symp->size=(row*col*size_of_double+8);
-                       emit(ARRR, $$->symp->name, $1->symp->name, $1->loc->name);
-                     }*/
-               }
+
+
+                       int row=$1->symp->type->row;
+                       int col=$1->symp->type->column;
+                       symb *t=  gentemp(_DOUBLE);
+                       $$->symp =new symb();
+                        $$->symp->type=new symbolType (symbolType(_MATRIX, NULL, 0));
+                       $$->symp->name=t->name;
+                        tempMat.insert(make_pair($$->symp->name,$1->symp->name));
+                      for(int i=0;i<row;i++)
+
+                        for(int j=0;j<col;j++)
+                        {
+                          symb* p1=gentemp(_DOUBLE);
+                          symb* p=gentemp(_DOUBLE);
+                          gentemp(_DOUBLE);
+                          emit(ARRR,p->name,$1->symp->name,tostr(8*(col*i+j)));
+                          gentemp(_DOUBLE);
+                        //  emit(ARRL,$$->symp->name,tostr(8*(col*i+j)),p->name);
+                        }
+                        $$->symp->type->cat=_MATRIX;
+                      }
+
+                     $$->foundBracket=$1->foundBracket;
+                    // $$->symp->type->cat=_MATRIX;
+
+                     $1->foundBracket=initBracket;
+                     }
+
+
            else
                {
                    //$$->symp = gentemp($1->type,"transpose");
                    $$->setSymp ($1->symp);
+
+                  $$->foundBracket=$1->foundBracket;
+
+                  $1->foundBracket=initBracket;
                }
    }
    else if (catTemp==PTR) {                                   // Handling the case of pointers separately
      $$->setSymp ( $1->loc);
    }
-   else { // otherwise
+   else {
      $$->setSymp($1->symp);
+                                                                          // Copy all the Attributes
+
+    $$->foundBracket=$1->foundBracket;
+
+    $1->foundBracket=initBracket;
    }
+   // Copy all the Attributes
+
+$$->foundBracket=$1->foundBracket;
+
+$1->foundBracket=initBracket;
  }
  | multiplicative_expression '*' cast_expression
  {
@@ -629,46 +672,63 @@ additive_expression
  {
    if (typecheck($1->symp, $3->symp))                          // Handling Type Check
    {
-      cout<<"HERE ADD ADD"<<endl;
+
      $$ = new Expression();
 
      int row,col;
 
-        if ($1->symp->type->cat!=_MATRIX && $3->symp->type->cat==_MATRIX)
+       if ($1->symp->type->cat==_MATRIX)
        {
-         symbolType *t=new symbolType($3->symp->type->cat,NULL,0);
-         row=$3->symp->type->row;
-         col=$3->symp->type->column;
-         $$->symp = gentemp(t,"Mat_temp");
-       }
-       else if ($1->symp->type->cat==_MATRIX && $3->symp->type->cat!=_MATRIX)
-       {
-         symbolType *t=new symbolType($1->symp->type->cat,NULL,0);
-         row=$1->symp->type->row;
-         col=$1->symp->type->column;
-         $$->symp = gentemp(t,"Mat_temp");
-       }
-       else
-            {$$->setSymp(gentemp(($1->getSymp())->type->cat));
-              //cout<<"HERE"<<endl;
+         //cout<<"ENTERED HERe"<<endl;
+         if ($1->foundBracket)
+         {
+           $$->setSymp(gentemp(($1->getSymp())->type->cat));
+       string res=$$->getSymp()->name;
+       string name1=$1->getSymp()->name;
+       string name2=$3->getSymp()->name;
+       emit (ADD, res, name1, name2);
+         }
+         else
+         {
+
+
+          string mat1=tempMat[$1->symp->name];
+          string mat2=tempMat[$3->symp->name];
+           //out<<"ENTERED HERe"<<mat1<<" " <<mat2<<endl;
+           int row=table->lookup(mat1)->type->row;
+           int col=  table->lookup(mat1)->type->column;
+           $$->symp = gentemp(_DOUBLE);
+           vector<string> m;
+           addMap.insert(make_pair($$->symp->name,m));
+
+          for(int i=0;i<row;i++)
+
+            for(int j=0;j<col;j++)
+            {
+              gentemp(_DOUBLE);
+              symb* p=gentemp(_DOUBLE);
+              emit(ARRR,p->name,tempMat[$1->symp->name],tostr(8*(col*i+j)));
+              gentemp(_DOUBLE);
+              symb* p1=gentemp(_DOUBLE);
+              emit(ARRR,p1->name,tempMat[$3->symp->name],tostr(8*(col*i+j)));
+              gentemp(_DOUBLE);
+              symb* p2=gentemp(_DOUBLE);
+              emit(ADD,p2->name,p->name,p1->name);
+              addMap[$$->symp->name].push_back(p2->name);
+            //  emit(ARRL,$$->symp->name,tostr(8*(col*i+j)),p2->name);
             }
 
-       if ($1->symp->type->cat==_MATRIX && $3->symp->type->cat!=_MATRIX)
-       {
-         $$->symp->type->row=row;
-         $$->symp->type->column=col;
-         $$->symp->size=(row*col*size_of_double)+8;
+         }
+
        }
-       else if($1->symp->type->cat!=_MATRIX && $3->symp->type->cat==_MATRIX)
+       else
        {
-         $$->symp->type->row=row;
-         $$->symp->type->column=col;
-         $$->symp->size=(row*col*size_of_double)+8;
-       }
+         $$->setSymp(gentemp(($1->getSymp())->type->cat));
      string res=$$->getSymp()->name;
      string name1=$1->getSymp()->name;
      string name2=$3->getSymp()->name;
      emit (ADD, res, name1, name2);
+   }
    }
    else cout << "Type Error"<< endl;
  }
@@ -1072,19 +1132,38 @@ assignment_expression
                                                /*
                                                The case where the LHS of the assignment_expression is a matrix (within it,
                                                whether a transpose operation is being handled) or pointer is dealt with separately
-                                               */
-
+                                                */
    if (category==_MATRIX)
    {
-     cout<<" name name "<<$1->symp->name<<" "<<" "<<$1->loc->name<<" "<<$3->symp->name<<endl;
-      $3->symp = conv($3->symp, $1->type->cat);
-       /*if (transRUN==false)*/
+
+    //  $3->symp = conv($3->symp, $1->type->cat);
+       if($1->foundBracket)
+       {
+
+
            emit(ARRL, $1->symp->name, $1->loc->name, $3->symp->name);
-       /*else
+        }
+       else
            {
-                 emit(EQUAL, $1->symp->name,$3->symp->name);
-                 transRUN=false;
-           }*/
+
+             int row=($1->symp->type->row);
+             int col=($1->symp->type->column);
+
+             int mapIndex=0;
+            for(int i=0;i<row;i++)
+
+              for(int j=0;j<col;j++)
+              {
+                gentemp(_DOUBLE);
+                symb* p=gentemp(_DOUBLE);
+                gentemp(_DOUBLE);
+                emit(EQUAL,p->name,(addMap[$3->symp->name])[mapIndex]);
+                mapIndex++;
+              //  emit(ARRR,p->name,$3->symp->name,tostr(8*(col*i+j)));
+              gentemp(_DOUBLE);
+                emit(ARRL,$1->symp->name,tostr(8*(col*i+j)),p->name);
+              }
+           }
    }
 
    else if(category==PTR)

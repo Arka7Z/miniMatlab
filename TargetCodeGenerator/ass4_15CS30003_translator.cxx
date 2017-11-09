@@ -425,7 +425,7 @@ symb* gentemp (symbolType* t, string init,bool decl)
 					a=s->type->row = t->column;																						// Reverse row and columns during transpose operation
 					b=s->type->column = t->row;
 					s->type->cat=_MATRIX;																									// Set the category of temporary as Matrix
-					s->size = (t->row*t->column*8 + 8);																		// Set size of the Matrix type temp
+					s->size = (t->row*t->column*8 );																		// Set size of the Matrix type temp
 			}
 			s->category = "temp";																											// Type of the category in symbolTable is temporary
 			if (init=="Mat_temp")																											// Handling matrix type temporary
@@ -433,7 +433,7 @@ symb* gentemp (symbolType* t, string init,bool decl)
 				s->init="";																															// Setting row,column and size
 				s->type->row = t->column;
 				s->type->column = t->row;
-				s->size = (t->row*t->column*8 + 8);
+				s->size = (t->row*t->column*8);
 				table->table.push_back ( *s);
 			}
 			if (decl)																																	// Case when matrix is being declared(initialisation stage)
@@ -441,7 +441,7 @@ symb* gentemp (symbolType* t, string init,bool decl)
 				s->init=init;																														// Set initial value, dimensions and size
 				s->type->row = t->row;
 				s->type->column = t->column;
-				s->size = (t->row*t->column*8 + 8);
+				s->size = (t->row*t->column*8);
 				table->table.push_back ( *s);
 			}
 

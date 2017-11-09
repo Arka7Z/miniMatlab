@@ -156,12 +156,12 @@ class symb {                                                                    
         symb(string, typeEnum type_e = _INT, symbolType * ptr = NULL, int width = 0);     // Constructor
         symb * update(symbolType * temp);                                       // Updates symbol using a type object and nested table pointer such as during declartion of variables
         symb * update(typeEnum type_e);                                         // Updates symbol such as during declartion of variables
-
+        bool foundBracket=false;
         friend ostream & operator << (ostream & ,const symb * );
         symb * linkst(symbolTable * t);                                         // Sets nesed symbol table during funciton calculateSizeOfType
         symb()
         {
-          
+
         }
         //Getter Setter Methods
         string getName();
@@ -285,9 +285,9 @@ class Expression {                                                              
 public:
         bool isbool;                                                            // if the expression is bool or not
 
-
+        bool foundBracket=false;
         symb * symp;                                                            // Pointer to its entry in the symbol table( valid only if non boolean entity)
-
+        vector<string> mat_temp_list;
 
         li truelist;                                                            // truelist(if boolean entity)     [ inherited ]
         li falselist;                                                           // falselist(if boolean entity)    [ inherited ]
@@ -328,7 +328,8 @@ public:
 class UnaryExpr                                                                 // Class to store different Attributes (including index address in memory for matrix)
 {
 public:
-        typeEnum cat;                                                           // type of the entity such as double,matrix
+        typeEnum cat;
+        bool foundBracket=false;                                                          // type of the entity such as double,matrix
         symb * loc;                                                             // Used for storing the index tranlation of an array element
         symb * symp;                                                            // Pointer to symbol table for the entry
         symbolType * type;                                                      // Pointer  to type object
