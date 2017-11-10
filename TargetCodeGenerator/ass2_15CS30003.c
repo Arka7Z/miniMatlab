@@ -105,7 +105,7 @@ int printInt(int n)
 
 }
 
-int readFlt(float* f)
+int readFlt(double* f)
 {
 	char integer[12],string[20];
 	int i=0,retValue,leftLimit,offset,tmp=0,intLength,fracLength=0,intNum,fracNum;
@@ -167,7 +167,8 @@ int readFlt(float* f)
 	int absNum=(intNum>0)?intNum:((-1)*intNum);
 	float diff=frac+((float)absNum);
 	(intNum>0)?(diff=diff):(diff=(-diff));
-	*f=diff;
+
+	*f=(double)diff;
 	if (retValue>=0)
 		return OK;
 	else

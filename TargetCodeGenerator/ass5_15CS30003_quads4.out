@@ -1,0 +1,1129 @@
+./comp 4
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Symbol Table :Global                                         Parent: null
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Name            Type                          Category    Initial Value                           Size    Offset  Nested Table
+------------------------------------------------------------------------------------------------------------------------------------------------------
+printInt        int                           function                                            4       0       printInt
+printStr        int                           function                                            4       4       printStr
+printFlt        int                           function                                            4       8       printFlt
+readFlt         int                           function                                            4       12      readFlt
+readInt         int                           function                                            4       16      readInt
+main            void                          function                                            0       20      main
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Symbol Table :printInt                                       Parent: Global
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Name            Type                          Category    Initial Value                           Size    Offset  Nested Table
+------------------------------------------------------------------------------------------------------------------------------------------------------
+num             int                           param                                               4       0       null
+retVal          int                           local                                               4       4       null
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Symbol Table :printStr                                       Parent: Global
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Name            Type                          Category    Initial Value                           Size    Offset  Nested Table
+------------------------------------------------------------------------------------------------------------------------------------------------------
+c               ptr(char)                     param                                               4       0       null
+retVal          int                           local                                               4       4       null
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Symbol Table :printFlt                                       Parent: Global
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Name            Type                          Category    Initial Value                           Size    Offset  Nested Table
+------------------------------------------------------------------------------------------------------------------------------------------------------
+f               double                        param                                               8       0       null
+retVal          int                           local                                               4       8       null
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Symbol Table :readFlt                                        Parent: Global
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Name            Type                          Category    Initial Value                           Size    Offset  Nested Table
+------------------------------------------------------------------------------------------------------------------------------------------------------
+f               ptr(double)                   param                                               4       0       null
+retVal          int                           local                                               4       4       null
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Symbol Table :readInt                                        Parent: Global
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Name            Type                          Category    Initial Value                           Size    Offset  Nested Table
+------------------------------------------------------------------------------------------------------------------------------------------------------
+t               ptr(int)                      param                                               4       0       null
+retVal          int                           local                                               4       4       null
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Symbol Table :main                                           Parent: Global
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Name            Type                          Category    Initial Value                           Size    Offset  Nested Table
+------------------------------------------------------------------------------------------------------------------------------------------------------
+printStr        int                           local                                               4       0       null
+t00             ptr(char)                     temp        "the test file for testing some of matrix  initialization and readflt and printflt\n\n"4       4       null
+t01             int                           temp                                                4       8       null
+i               int                           local                                               4       12      null
+j               int                           local                                               4       16      null
+n               Matrix(2, 2, double)          local       2.0                                     32      20      null
+t02             int                           temp        2                                       4       52      null
+t03             int                           temp        2                                       4       56      null
+t04             double                        temp        2.0                                     8       60      null
+t05             double                        temp        1.3                                     8       68      null
+t06             double                        temp        3.4                                     8       76      null
+t07             double                        temp        5.5                                     8       84      null
+m               Matrix(2, 2, double)          local       1.0                                     32      92      null
+t08             int                           temp        2                                       4       124     null
+t09             int                           temp        2                                       4       128     null
+t10             double                        temp        1.0                                     8       132     null
+t11             double                        temp        2.3                                     8       140     null
+t12             double                        temp        3.4                                     8       148     null
+t13             double                        temp        4.5                                     8       156     null
+x               Matrix(2, 2, double)          local                                               32      164     null
+t14             int                           temp        2                                       4       196     null
+t15             int                           temp        2                                       4       200     null
+y               Matrix(2, 2, double)          local                                               32      204     null
+t16             int                           temp        2                                       4       236     null
+t17             int                           temp        2                                       4       240     null
+t18             double                        temp                                                8       244     null
+t19             double                        temp                                                8       252     null
+t20             double                        temp                                                8       260     null
+t21             int                           temp                                                4       268     null
+t22             int                           temp                                                4       272     null
+t23             int                           temp                                                4       276     null
+t24             int                           temp                                                4       280     null
+t25             int                           temp                                                4       284     null
+t26             double                        temp                                                8       288     null
+t27             double                        temp                                                8       296     null
+t28             double                        temp                                                8       304     null
+t29             int                           temp                                                4       312     null
+t30             int                           temp                                                4       316     null
+t31             int                           temp                                                4       320     null
+t32             int                           temp                                                4       324     null
+t33             int                           temp                                                4       328     null
+t34             double                        temp                                                8       332     null
+t35             double                        temp                                                8       340     null
+t36             double                        temp                                                8       348     null
+t37             int                           temp                                                4       356     null
+t38             int                           temp                                                4       360     null
+t39             int                           temp                                                4       364     null
+t40             int                           temp                                                4       368     null
+t41             int                           temp                                                4       372     null
+t42             double                        temp                                                8       376     null
+t43             double                        temp                                                8       384     null
+t44             double                        temp                                                8       392     null
+t45             int                           temp                                                4       400     null
+t46             int                           temp                                                4       404     null
+t47             int                           temp                                                4       408     null
+t48             int                           temp                                                4       412     null
+t49             int                           temp                                                4       416     null
+t50             double                        temp                                                8       420     null
+t51             double                        temp                                                8       428     null
+t52             double                        temp                                                8       436     null
+t53             double                        temp                                                8       444     null
+t54             int                           temp                                                4       452     null
+t55             int                           temp                                                4       456     null
+t56             int                           temp                                                4       460     null
+t57             int                           temp                                                4       464     null
+t58             int                           temp                                                4       468     null
+t59             double                        temp                                                8       472     null
+t60             double                        temp                                                8       480     null
+t61             double                        temp                                                8       488     null
+t62             int                           temp                                                4       496     null
+t63             int                           temp                                                4       500     null
+t64             int                           temp                                                4       504     null
+t65             int                           temp                                                4       508     null
+t66             int                           temp                                                4       512     null
+t67             double                        temp                                                8       516     null
+t68             double                        temp                                                8       524     null
+t69             double                        temp                                                8       532     null
+t70             int                           temp                                                4       540     null
+t71             int                           temp                                                4       544     null
+t72             int                           temp                                                4       548     null
+t73             int                           temp                                                4       552     null
+t74             int                           temp                                                4       556     null
+t75             double                        temp                                                8       560     null
+t76             double                        temp                                                8       568     null
+t77             double                        temp                                                8       576     null
+t78             int                           temp                                                4       584     null
+t79             int                           temp                                                4       588     null
+t80             int                           temp                                                4       592     null
+t81             int                           temp                                                4       596     null
+t82             int                           temp                                                4       600     null
+t83             double                        temp                                                8       604     null
+t84             double                        temp                                                8       612     null
+t85             int                           temp                                                4       620     null
+t86             int                           temp                                                4       624     null
+t87             int                           temp                                                4       628     null
+t88             int                           temp                                                4       632     null
+t89             int                           temp                                                4       636     null
+t90             double                        temp                                                8       640     null
+t91             double                        temp                                                8       648     null
+t92             double                        temp                                                8       656     null
+t93             int                           temp                                                4       664     null
+t94             int                           temp                                                4       668     null
+t95             int                           temp                                                4       672     null
+t96             int                           temp                                                4       676     null
+t97             int                           temp                                                4       680     null
+t98             double                        temp                                                8       684     null
+t99             double                        temp                                                8       692     null
+t100            int                           temp                                                4       700     null
+t101            int                           temp                                                4       704     null
+t102            int                           temp                                                4       708     null
+t103            int                           temp                                                4       712     null
+t104            int                           temp                                                4       716     null
+t105            double                        temp                                                8       720     null
+t106            double                        temp                                                8       728     null
+t107            double                        temp                                                8       736     null
+t108            int                           temp                                                4       744     null
+t109            int                           temp                                                4       748     null
+t110            int                           temp                                                4       752     null
+t111            int                           temp                                                4       756     null
+t112            int                           temp                                                4       760     null
+t113            double                        temp                                                8       764     null
+t114            double                        temp                                                8       772     null
+t115            int                           temp                                                4       780     null
+t116            int                           temp                                                4       784     null
+t117            int                           temp                                                4       788     null
+t118            int                           temp                                                4       792     null
+t119            int                           temp                                                4       796     null
+t120            double                        temp                                                8       800     null
+t121            double                        temp                                                8       808     null
+t122            double                        temp                                                8       816     null
+t123            int                           temp                                                4       824     null
+t124            int                           temp                                                4       828     null
+t125            int                           temp                                                4       832     null
+t126            int                           temp                                                4       836     null
+t127            int                           temp                                                4       840     null
+t128            double                        temp                                                8       844     null
+t129            double                        temp                                                8       852     null
+t130            int                           temp                                                4       860     null
+t131            int                           temp                                                4       864     null
+t132            int                           temp                                                4       868     null
+t133            int                           temp                                                4       872     null
+t134            int                           temp                                                4       876     null
+t135            double                        temp                                                8       880     null
+t136            double                        temp                                                8       888     null
+t137            double                        temp                                                8       896     null
+t138            int                           temp                                                4       904     null
+t139            int                           temp                                                4       908     null
+t140            int                           temp                                                4       912     null
+t141            int                           temp                                                4       916     null
+t142            int                           temp                                                4       920     null
+t143            double                        temp                                                8       924     null
+t144            double                        temp                                                8       932     null
+t145            double                        temp                                                8       940     null
+t146            int                           temp                                                4       948     null
+t147            int                           temp                                                4       952     null
+t148            int                           temp                                                4       956     null
+t149            int                           temp                                                4       960     null
+t150            int                           temp                                                4       964     null
+t151            double                        temp                                                8       968     null
+t152            double                        temp                                                8       976     null
+t153            int                           temp                                                4       984     null
+t154            int                           temp                                                4       988     null
+t155            int                           temp                                                4       992     null
+t156            int                           temp                                                4       996     null
+t157            int                           temp                                                4       1000    null
+t158            double                        temp                                                8       1004    null
+t159            double                        temp                                                8       1012    null
+t160            int                           temp                                                4       1020    null
+t161            int                           temp                                                4       1024    null
+t162            int                           temp                                                4       1028    null
+t163            int                           temp                                                4       1032    null
+t164            int                           temp                                                4       1036    null
+t165            double                        temp                                                8       1040    null
+t166            double                        temp                                                8       1048    null
+t167            int                           temp                                                4       1056    null
+t168            int                           temp                                                4       1060    null
+t169            int                           temp                                                4       1064    null
+t170            int                           temp                                                4       1068    null
+t171            int                           temp                                                4       1072    null
+t172            double                        temp                                                8       1076    null
+t173            double                        temp                                                8       1084    null
+t174            double                        temp                                                8       1092    null
+t175            double                        temp                                                8       1100    null
+t176            int                           temp                                                4       1108    null
+t177            int                           temp                                                4       1112    null
+t178            int                           temp                                                4       1116    null
+t179            int                           temp                                                4       1120    null
+t180            int                           temp                                                4       1124    null
+t181            double                        temp                                                8       1128    null
+t182            double                        temp                                                8       1136    null
+t183            double                        temp                                                8       1144    null
+t184            int                           temp                                                4       1152    null
+t185            int                           temp                                                4       1156    null
+t186            int                           temp                                                4       1160    null
+t187            int                           temp                                                4       1164    null
+t188            int                           temp                                                4       1168    null
+t189            double                        temp                                                8       1172    null
+t190            double                        temp                                                8       1180    null
+t191            double                        temp                                                8       1188    null
+t192            int                           temp                                                4       1196    null
+t193            int                           temp                                                4       1200    null
+t194            int                           temp                                                4       1204    null
+t195            int                           temp                                                4       1208    null
+t196            int                           temp                                                4       1212    null
+t197            double                        temp                                                8       1216    null
+t198            double                        temp                                                8       1224    null
+t199            double                        temp                                                8       1232    null
+t200            int                           temp                                                4       1240    null
+t201            int                           temp                                                4       1244    null
+t202            int                           temp                                                4       1248    null
+t203            int                           temp                                                4       1252    null
+t204            int                           temp                                                4       1256    null
+t205            double                        temp                                                8       1260    null
+t206            double                        temp                                                8       1268    null
+t207            double                        temp                                                8       1276    null
+t208            double                        temp                                                8       1284    null
+t209            int                           temp                                                4       1292    null
+t210            int                           temp                                                4       1296    null
+t211            int                           temp                                                4       1300    null
+t212            int                           temp                                                4       1304    null
+t213            int                           temp                                                4       1308    null
+t214            double                        temp                                                8       1312    null
+t215            double                        temp                                                8       1320    null
+t216            double                        temp                                                8       1328    null
+t217            int                           temp                                                4       1336    null
+t218            int                           temp                                                4       1340    null
+t219            int                           temp                                                4       1344    null
+t220            int                           temp                                                4       1348    null
+t221            int                           temp                                                4       1352    null
+t222            double                        temp                                                8       1356    null
+t223            double                        temp                                                8       1364    null
+t224            double                        temp                                                8       1372    null
+t225            int                           temp                                                4       1380    null
+t226            int                           temp                                                4       1384    null
+t227            int                           temp                                                4       1388    null
+t228            int                           temp                                                4       1392    null
+t229            int                           temp                                                4       1396    null
+t230            double                        temp                                                8       1400    null
+t231            double                        temp                                                8       1408    null
+t232            double                        temp                                                8       1416    null
+t233            int                           temp                                                4       1424    null
+t234            int                           temp                                                4       1428    null
+t235            int                           temp                                                4       1432    null
+t236            int                           temp                                                4       1436    null
+t237            int                           temp                                                4       1440    null
+t238            double                        temp                                                8       1444    null
+t239            double                        temp                                                8       1452    null
+t240            int                           temp                                                4       1460    null
+t241            int                           temp                                                4       1464    null
+t242            int                           temp                                                4       1468    null
+t243            int                           temp                                                4       1472    null
+t244            int                           temp                                                4       1476    null
+t245            double                        temp                                                8       1480    null
+t246            double                        temp                                                8       1488    null
+t247            double                        temp                                                8       1496    null
+t248            int                           temp                                                4       1504    null
+t249            int                           temp                                                4       1508    null
+t250            int                           temp                                                4       1512    null
+t251            int                           temp                                                4       1516    null
+t252            int                           temp                                                4       1520    null
+t253            double                        temp                                                8       1524    null
+t254            double                        temp                                                8       1532    null
+t255            int                           temp                                                4       1540    null
+t256            int                           temp                                                4       1544    null
+t257            int                           temp                                                4       1548    null
+t258            int                           temp                                                4       1552    null
+t259            int                           temp                                                4       1556    null
+t260            double                        temp                                                8       1560    null
+t261            double                        temp                                                8       1568    null
+t262            double                        temp                                                8       1576    null
+t263            int                           temp                                                4       1584    null
+t264            int                           temp                                                4       1588    null
+t265            int                           temp                                                4       1592    null
+t266            int                           temp                                                4       1596    null
+t267            int                           temp                                                4       1600    null
+t268            double                        temp                                                8       1604    null
+t269            double                        temp                                                8       1612    null
+t270            int                           temp                                                4       1620    null
+t271            int                           temp                                                4       1624    null
+t272            int                           temp                                                4       1628    null
+t273            int                           temp                                                4       1632    null
+t274            int                           temp                                                4       1636    null
+t275            double                        temp                                                8       1640    null
+t276            double                        temp                                                8       1648    null
+t277            double                        temp                                                8       1656    null
+t278            int                           temp                                                4       1664    null
+t279            int                           temp                                                4       1668    null
+t280            int                           temp                                                4       1672    null
+t281            int                           temp                                                4       1676    null
+t282            int                           temp                                                4       1680    null
+t283            double                        temp                                                8       1684    null
+t284            double                        temp                                                8       1692    null
+t285            int                           temp                                                4       1700    null
+t286            int                           temp                                                4       1704    null
+t287            int                           temp                                                4       1708    null
+t288            int                           temp                                                4       1712    null
+t289            int                           temp                                                4       1716    null
+t290            double                        temp                                                8       1720    null
+t291            double                        temp                                                8       1728    null
+t292            double                        temp                                                8       1736    null
+t293            int                           temp                                                4       1744    null
+t294            int                           temp                                                4       1748    null
+t295            int                           temp                                                4       1752    null
+t296            int                           temp                                                4       1756    null
+t297            int                           temp                                                4       1760    null
+t298            double                        temp                                                8       1764    null
+t299            double                        temp                                                8       1772    null
+t300            double                        temp                                                8       1780    null
+t301            int                           temp                                                4       1788    null
+t302            int                           temp                                                4       1792    null
+t303            int                           temp                                                4       1796    null
+t304            int                           temp                                                4       1800    null
+t305            int                           temp                                                4       1804    null
+t306            double                        temp                                                8       1808    null
+t307            double                        temp                                                8       1816    null
+t308            int                           temp                                                4       1824    null
+t309            int                           temp                                                4       1828    null
+t310            int                           temp                                                4       1832    null
+t311            int                           temp                                                4       1836    null
+t312            int                           temp                                                4       1840    null
+t313            double                        temp                                                8       1844    null
+t314            double                        temp                                                8       1852    null
+t315            int                           temp                                                4       1860    null
+t316            int                           temp                                                4       1864    null
+t317            int                           temp                                                4       1868    null
+t318            int                           temp                                                4       1872    null
+t319            int                           temp                                                4       1876    null
+t320            double                        temp                                                8       1880    null
+t321            double                        temp                                                8       1888    null
+t322            int                           temp                                                4       1896    null
+t323            int                           temp                                                4       1900    null
+t324            int                           temp                                                4       1904    null
+t325            int                           temp                                                4       1908    null
+t326            int                           temp                                                4       1912    null
+t327            double                        temp                                                8       1916    null
+t328            ptr(char)                     temp        "Matrix addition demo\n"                4       1924    null
+t329            int                           temp                                                4       1928    null
+t330            int                           temp        0                                       4       1932    null
+t331            int                           temp                                                4       1936    null
+t332            int                           temp        2                                       4       1940    null
+t333            int                           temp                                                4       1944    null
+t334            int                           temp                                                4       1948    null
+t335            int                           temp        0                                       4       1952    null
+t336            int                           temp                                                4       1956    null
+t337            int                           temp        2                                       4       1960    null
+t338            int                           temp                                                4       1964    null
+t339            int                           temp                                                4       1968    null
+printFlt        int                           local                                               4       1972    null
+t340            int                           temp                                                4       1976    null
+t341            int                           temp                                                4       1980    null
+t342            int                           temp                                                4       1984    null
+t343            int                           temp                                                4       1988    null
+t344            double                        temp                                                8       1992    null
+t345            double                        temp                                                8       2000    null
+t346            int                           temp                                                4       2008    null
+t347            ptr(char)                     temp        "Matrix subtraction demo\n"             4       2012    null
+t348            int                           temp                                                4       2016    null
+t349            int                           temp        0                                       4       2020    null
+t350            int                           temp                                                4       2024    null
+t351            int                           temp        2                                       4       2028    null
+t352            int                           temp                                                4       2032    null
+t353            int                           temp                                                4       2036    null
+t354            int                           temp        0                                       4       2040    null
+t355            int                           temp                                                4       2044    null
+t356            int                           temp        2                                       4       2048    null
+t357            int                           temp                                                4       2052    null
+t358            int                           temp                                                4       2056    null
+t359            int                           temp                                                4       2060    null
+t360            int                           temp                                                4       2064    null
+t361            int                           temp                                                4       2068    null
+t362            int                           temp                                                4       2072    null
+t363            double                        temp                                                8       2076    null
+t364            double                        temp                                                8       2084    null
+t365            int                           temp                                                4       2092    null
+d               double                        local                                               8       2096    null
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--Quad Table----------------------------------------------------------------
+index   op      argument1argument2result  
+0        op                     main    
+1        =      0               t00     
+2        param                  t00     
+3        call   printStr1       t01     
+4        =      2               t02     
+5        =      2               t03     
+6        =      2.0             t04     
+7        =      1.3             t05     
+8        =      3.4             t06     
+9        =      5.5             t07     
+10       []=    0       t04     n       
+11       []=    8       t05     n       
+12       []=    16      t06     n       
+13       []=    24      t07     n       
+14       =      2               t08     
+15       =      2               t09     
+16       =      1.0             t10     
+17       =      2.3             t11     
+18       =      3.4             t12     
+19       =      4.5             t13     
+20       []=    0       t10     m       
+21       []=    8       t11     m       
+22       []=    16      t12     m       
+23       []=    24      t13     m       
+24       =      2               t14     
+25       =      2               t15     
+26       =      2               t16     
+27       =      2               t17     
+28       =      0               t21     
+29       =      0               t22     
+30       *      t21     16      t23     
+31       *      t22     8       t24     
+32       +      t23     t24     t25     
+33       =[]R   m       t25     t20     
+34       =      0               t29     
+35       =      1               t30     
+36       *      t29     16      t31     
+37       *      t30     8       t32     
+38       +      t31     t32     t33     
+39       =[]R   m       t33     t28     
+40       =      1               t37     
+41       =      0               t38     
+42       *      t37     16      t39     
+43       *      t38     8       t40     
+44       +      t39     t40     t41     
+45       =[]R   m       t41     t36     
+46       =      1               t45     
+47       =      1               t46     
+48       *      t45     16      t47     
+49       *      t46     8       t48     
+50       +      t47     t48     t49     
+51       =[]R   m       t49     t44     
+52       =      0               t54     
+53       =      0               t55     
+54       *      t54     16      t56     
+55       *      t55     8       t57     
+56       +      t56     t57     t58     
+57       =[]R   n       t58     t53     
+58       =      0               t62     
+59       =      1               t63     
+60       *      t62     16      t64     
+61       *      t63     8       t65     
+62       +      t64     t65     t66     
+63       =[]R   n       t66     t61     
+64       =      1               t70     
+65       =      0               t71     
+66       *      t70     16      t72     
+67       *      t71     8       t73     
+68       +      t72     t73     t74     
+69       =[]R   n       t74     t69     
+70       =      1               t78     
+71       =      1               t79     
+72       *      t78     16      t80     
+73       *      t79     8       t81     
+74       +      t80     t81     t82     
+75       =[]R   n       t82     t77     
+76       =      0               t85     
+77       =      0               t86     
+78       *      t85     16      t87     
+79       *      t86     8       t88     
+80       +      t87     t88     t89     
+81       =[]R   m       t89     t91     
+82       =      0               t93     
+83       =      0               t94     
+84       *      t93     16      t95     
+85       *      t94     8       t96     
+86       +      t95     t96     t97     
+87       =[]R   n       t97     t92     
+88       +      t91     t92     t99     
+89       =      0               t100    
+90       =      1               t101    
+91       *      t100    16      t102    
+92       *      t101    8       t103    
+93       +      t102    t103    t104    
+94       =[]R   m       t104    t106    
+95       =      0               t108    
+96       =      1               t109    
+97       *      t108    16      t110    
+98       *      t109    8       t111    
+99       +      t110    t111    t112    
+100      =[]R   n       t112    t107    
+101      +      t106    t107    t114    
+102      =      1               t115    
+103      =      0               t116    
+104      *      t115    16      t117    
+105      *      t116    8       t118    
+106      +      t117    t118    t119    
+107      =[]R   m       t119    t121    
+108      =      1               t123    
+109      =      0               t124    
+110      *      t123    16      t125    
+111      *      t124    8       t126    
+112      +      t125    t126    t127    
+113      =[]R   n       t127    t122    
+114      +      t121    t122    t129    
+115      =      1               t130    
+116      =      1               t131    
+117      *      t130    16      t132    
+118      *      t131    8       t133    
+119      +      t132    t133    t134    
+120      =[]R   m       t134    t136    
+121      =      1               t138    
+122      =      1               t139    
+123      *      t138    16      t140    
+124      *      t139    8       t141    
+125      +      t140    t141    t142    
+126      =[]R   n       t142    t137    
+127      +      t136    t137    t144    
+128      =      t99             t145    
+129      =      0               t146    
+130      =      0               t147    
+131      *      t146    16      t148    
+132      *      t147    8       t149    
+133      +      t148    t149    t150    
+134     =[]L    t150    t145    x       
+135      =      t114            t152    
+136      =      0               t153    
+137      =      1               t154    
+138      *      t153    16      t155    
+139      *      t154    8       t156    
+140      +      t155    t156    t157    
+141     =[]L    t157    t152    x       
+142      =      t129            t159    
+143      =      1               t160    
+144      =      0               t161    
+145      *      t160    16      t162    
+146      *      t161    8       t163    
+147      +      t162    t163    t164    
+148     =[]L    t164    t159    x       
+149      =      t144            t166    
+150      =      1               t167    
+151      =      1               t168    
+152      *      t167    16      t169    
+153      *      t168    8       t170    
+154      +      t169    t170    t171    
+155     =[]L    t171    t166    x       
+156      =      0               t176    
+157      =      0               t177    
+158      *      t176    16      t178    
+159      *      t177    8       t179    
+160      +      t178    t179    t180    
+161      =[]R   m       t180    t175    
+162      =      0               t184    
+163      =      1               t185    
+164      *      t184    16      t186    
+165      *      t185    8       t187    
+166      +      t186    t187    t188    
+167      =[]R   m       t188    t183    
+168      =      1               t192    
+169      =      0               t193    
+170      *      t192    16      t194    
+171      *      t193    8       t195    
+172      +      t194    t195    t196    
+173      =[]R   m       t196    t191    
+174      =      1               t200    
+175      =      1               t201    
+176      *      t200    16      t202    
+177      *      t201    8       t203    
+178      +      t202    t203    t204    
+179      =[]R   m       t204    t199    
+180      =      0               t209    
+181      =      0               t210    
+182      *      t209    16      t211    
+183      *      t210    8       t212    
+184      +      t211    t212    t213    
+185      =[]R   x       t213    t208    
+186      =      0               t217    
+187      =      1               t218    
+188      *      t217    16      t219    
+189      *      t218    8       t220    
+190      +      t219    t220    t221    
+191      =[]R   x       t221    t216    
+192      =      1               t225    
+193      =      0               t226    
+194      *      t225    16      t227    
+195      *      t226    8       t228    
+196      +      t227    t228    t229    
+197      =[]R   x       t229    t224    
+198      =      1               t233    
+199      =      1               t234    
+200      *      t233    16      t235    
+201      *      t234    8       t236    
+202      +      t235    t236    t237    
+203      =[]R   x       t237    t232    
+204      =      0               t240    
+205      =      0               t241    
+206      *      t240    16      t242    
+207      *      t241    8       t243    
+208      +      t242    t243    t244    
+209      =[]R   m       t244    t246    
+210      =      0               t248    
+211      =      0               t249    
+212      *      t248    16      t250    
+213      *      t249    8       t251    
+214      +      t250    t251    t252    
+215      =[]R   x       t252    t247    
+216      -      t246    t247    t254    
+217      =      0               t255    
+218      =      1               t256    
+219      *      t255    16      t257    
+220      *      t256    8       t258    
+221      +      t257    t258    t259    
+222      =[]R   m       t259    t261    
+223      =      0               t263    
+224      =      1               t264    
+225      *      t263    16      t265    
+226      *      t264    8       t266    
+227      +      t265    t266    t267    
+228      =[]R   x       t267    t262    
+229      -      t261    t262    t269    
+230      =      1               t270    
+231      =      0               t271    
+232      *      t270    16      t272    
+233      *      t271    8       t273    
+234      +      t272    t273    t274    
+235      =[]R   m       t274    t276    
+236      =      1               t278    
+237      =      0               t279    
+238      *      t278    16      t280    
+239      *      t279    8       t281    
+240      +      t280    t281    t282    
+241      =[]R   x       t282    t277    
+242      -      t276    t277    t284    
+243      =      1               t285    
+244      =      1               t286    
+245      *      t285    16      t287    
+246      *      t286    8       t288    
+247      +      t287    t288    t289    
+248      =[]R   m       t289    t291    
+249      =      1               t293    
+250      =      1               t294    
+251      *      t293    16      t295    
+252      *      t294    8       t296    
+253      +      t295    t296    t297    
+254      =[]R   x       t297    t292    
+255      -      t291    t292    t299    
+256      =      t254            t300    
+257      =      0               t301    
+258      =      0               t302    
+259      *      t301    16      t303    
+260      *      t302    8       t304    
+261      +      t303    t304    t305    
+262     =[]L    t305    t300    y       
+263      =      t269            t307    
+264      =      0               t308    
+265      =      1               t309    
+266      *      t308    16      t310    
+267      *      t309    8       t311    
+268      +      t310    t311    t312    
+269     =[]L    t312    t307    y       
+270      =      t284            t314    
+271      =      1               t315    
+272      =      0               t316    
+273      *      t315    16      t317    
+274      *      t316    8       t318    
+275      +      t317    t318    t319    
+276     =[]L    t319    t314    y       
+277      =      t299            t321    
+278      =      1               t322    
+279      =      1               t323    
+280      *      t322    16      t324    
+281      *      t323    8       t325    
+282      +      t324    t325    t326    
+283     =[]L    t326    t321    y       
+284      =      1               t328    
+285      param                  t328    
+286      call   printStr1       t329    
+287      =      0               t330    
+288      =      t330            i       
+289      =      2               t332    
+290      <      i       t332    295     
+291      goto                   311     
+292      =      i               t334    
+293      +      i       1       i       
+294      goto                   289     
+295      =      0               t335    
+296      =      t335            j       
+297      =      2               t337    
+298      <      j       t337    303     
+299      goto                   292     
+300      =      j               t339    
+301      +      j       1       j       
+302      goto                   297     
+303      *      i       16      t341    
+304      *      j       8       t342    
+305      +      t341    t342    t343    
+306      =[]R   x       t343    t345    
+307      param                  t345    
+308      call   printFlt1       t346    
+309      goto                   300     
+310      goto                   292     
+311      =      2               t347    
+312      param                  t347    
+313      call   printStr1       t348    
+314      =      0               t349    
+315      =      t349            i       
+316      =      2               t351    
+317      <      i       t351    322     
+318      goto                   338     
+319      =      i               t353    
+320      +      i       1       i       
+321      goto                   316     
+322      =      0               t354    
+323      =      t354            j       
+324      =      2               t356    
+325      <      j       t356    330     
+326      goto                   319     
+327      =      j               t358    
+328      +      j       1       j       
+329      goto                   324     
+330      *      i       16      t360    
+331      *      j       8       t361    
+332      +      t360    t361    t362    
+333      =[]R   y       t362    t364    
+334      param                  t364    
+335      call   printFlt1       t365    
+336      goto                   327     
+337      goto                   319     
+338      op                     main    
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Quad Translation
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+main: 
+
+	1   :	t00 = 0
+	2   :	param t00
+	3   :	t01 = call printStr, 1
+	4   :	t02 = 2
+	5   :	t03 = 2
+	6   :	t04 = 2.0
+	7   :	t05 = 1.3
+	8   :	t06 = 3.4
+	9   :	t07 = 5.5
+	10  :	n[0]=t04
+	11  :	n[8]=t05
+	12  :	n[16]=t06
+	13  :	n[24]=t07
+	14  :	t08 = 2
+	15  :	t09 = 2
+	16  :	t10 = 1.0
+	17  :	t11 = 2.3
+	18  :	t12 = 3.4
+	19  :	t13 = 4.5
+	20  :	m[0]=t10
+	21  :	m[8]=t11
+	22  :	m[16]=t12
+	23  :	m[24]=t13
+	24  :	t14 = 2
+	25  :	t15 = 2
+	26  :	t16 = 2
+	27  :	t17 = 2
+	28  :	t21 = 0
+	29  :	t22 = 0
+	30  :	t23 = t21 * 16
+	31  :	t24 = t22 * 8
+	32  :	t25 = t23 + t24
+	33  :	t20 = m[t25]
+	34  :	t29 = 0
+	35  :	t30 = 1
+	36  :	t31 = t29 * 16
+	37  :	t32 = t30 * 8
+	38  :	t33 = t31 + t32
+	39  :	t28 = m[t33]
+	40  :	t37 = 1
+	41  :	t38 = 0
+	42  :	t39 = t37 * 16
+	43  :	t40 = t38 * 8
+	44  :	t41 = t39 + t40
+	45  :	t36 = m[t41]
+	46  :	t45 = 1
+	47  :	t46 = 1
+	48  :	t47 = t45 * 16
+	49  :	t48 = t46 * 8
+	50  :	t49 = t47 + t48
+	51  :	t44 = m[t49]
+	52  :	t54 = 0
+	53  :	t55 = 0
+	54  :	t56 = t54 * 16
+	55  :	t57 = t55 * 8
+	56  :	t58 = t56 + t57
+	57  :	t53 = n[t58]
+	58  :	t62 = 0
+	59  :	t63 = 1
+	60  :	t64 = t62 * 16
+	61  :	t65 = t63 * 8
+	62  :	t66 = t64 + t65
+	63  :	t61 = n[t66]
+	64  :	t70 = 1
+	65  :	t71 = 0
+	66  :	t72 = t70 * 16
+	67  :	t73 = t71 * 8
+	68  :	t74 = t72 + t73
+	69  :	t69 = n[t74]
+	70  :	t78 = 1
+	71  :	t79 = 1
+	72  :	t80 = t78 * 16
+	73  :	t81 = t79 * 8
+	74  :	t82 = t80 + t81
+	75  :	t77 = n[t82]
+	76  :	t85 = 0
+	77  :	t86 = 0
+	78  :	t87 = t85 * 16
+	79  :	t88 = t86 * 8
+	80  :	t89 = t87 + t88
+	81  :	t91 = m[t89]
+	82  :	t93 = 0
+	83  :	t94 = 0
+	84  :	t95 = t93 * 16
+	85  :	t96 = t94 * 8
+	86  :	t97 = t95 + t96
+	87  :	t92 = n[t97]
+	88  :	t99 = t91 + t92
+	89  :	t100 = 0
+	90  :	t101 = 1
+	91  :	t102 = t100 * 16
+	92  :	t103 = t101 * 8
+	93  :	t104 = t102 + t103
+	94  :	t106 = m[t104]
+	95  :	t108 = 0
+	96  :	t109 = 1
+	97  :	t110 = t108 * 16
+	98  :	t111 = t109 * 8
+	99  :	t112 = t110 + t111
+	100 :	t107 = n[t112]
+	101 :	t114 = t106 + t107
+	102 :	t115 = 1
+	103 :	t116 = 0
+	104 :	t117 = t115 * 16
+	105 :	t118 = t116 * 8
+	106 :	t119 = t117 + t118
+	107 :	t121 = m[t119]
+	108 :	t123 = 1
+	109 :	t124 = 0
+	110 :	t125 = t123 * 16
+	111 :	t126 = t124 * 8
+	112 :	t127 = t125 + t126
+	113 :	t122 = n[t127]
+	114 :	t129 = t121 + t122
+	115 :	t130 = 1
+	116 :	t131 = 1
+	117 :	t132 = t130 * 16
+	118 :	t133 = t131 * 8
+	119 :	t134 = t132 + t133
+	120 :	t136 = m[t134]
+	121 :	t138 = 1
+	122 :	t139 = 1
+	123 :	t140 = t138 * 16
+	124 :	t141 = t139 * 8
+	125 :	t142 = t140 + t141
+	126 :	t137 = n[t142]
+	127 :	t144 = t136 + t137
+	128 :	t145 = t99
+	129 :	t146 = 0
+	130 :	t147 = 0
+	131 :	t148 = t146 * 16
+	132 :	t149 = t147 * 8
+	133 :	t150 = t148 + t149
+	134 :	x[t150] = t145
+	135 :	t152 = t114
+	136 :	t153 = 0
+	137 :	t154 = 1
+	138 :	t155 = t153 * 16
+	139 :	t156 = t154 * 8
+	140 :	t157 = t155 + t156
+	141 :	x[t157] = t152
+	142 :	t159 = t129
+	143 :	t160 = 1
+	144 :	t161 = 0
+	145 :	t162 = t160 * 16
+	146 :	t163 = t161 * 8
+	147 :	t164 = t162 + t163
+	148 :	x[t164] = t159
+	149 :	t166 = t144
+	150 :	t167 = 1
+	151 :	t168 = 1
+	152 :	t169 = t167 * 16
+	153 :	t170 = t168 * 8
+	154 :	t171 = t169 + t170
+	155 :	x[t171] = t166
+	156 :	t176 = 0
+	157 :	t177 = 0
+	158 :	t178 = t176 * 16
+	159 :	t179 = t177 * 8
+	160 :	t180 = t178 + t179
+	161 :	t175 = m[t180]
+	162 :	t184 = 0
+	163 :	t185 = 1
+	164 :	t186 = t184 * 16
+	165 :	t187 = t185 * 8
+	166 :	t188 = t186 + t187
+	167 :	t183 = m[t188]
+	168 :	t192 = 1
+	169 :	t193 = 0
+	170 :	t194 = t192 * 16
+	171 :	t195 = t193 * 8
+	172 :	t196 = t194 + t195
+	173 :	t191 = m[t196]
+	174 :	t200 = 1
+	175 :	t201 = 1
+	176 :	t202 = t200 * 16
+	177 :	t203 = t201 * 8
+	178 :	t204 = t202 + t203
+	179 :	t199 = m[t204]
+	180 :	t209 = 0
+	181 :	t210 = 0
+	182 :	t211 = t209 * 16
+	183 :	t212 = t210 * 8
+	184 :	t213 = t211 + t212
+	185 :	t208 = x[t213]
+	186 :	t217 = 0
+	187 :	t218 = 1
+	188 :	t219 = t217 * 16
+	189 :	t220 = t218 * 8
+	190 :	t221 = t219 + t220
+	191 :	t216 = x[t221]
+	192 :	t225 = 1
+	193 :	t226 = 0
+	194 :	t227 = t225 * 16
+	195 :	t228 = t226 * 8
+	196 :	t229 = t227 + t228
+	197 :	t224 = x[t229]
+	198 :	t233 = 1
+	199 :	t234 = 1
+	200 :	t235 = t233 * 16
+	201 :	t236 = t234 * 8
+	202 :	t237 = t235 + t236
+	203 :	t232 = x[t237]
+	204 :	t240 = 0
+	205 :	t241 = 0
+	206 :	t242 = t240 * 16
+	207 :	t243 = t241 * 8
+	208 :	t244 = t242 + t243
+	209 :	t246 = m[t244]
+	210 :	t248 = 0
+	211 :	t249 = 0
+	212 :	t250 = t248 * 16
+	213 :	t251 = t249 * 8
+	214 :	t252 = t250 + t251
+	215 :	t247 = x[t252]
+	216 :	t254 = t246 - t247
+	217 :	t255 = 0
+	218 :	t256 = 1
+	219 :	t257 = t255 * 16
+	220 :	t258 = t256 * 8
+	221 :	t259 = t257 + t258
+	222 :	t261 = m[t259]
+	223 :	t263 = 0
+	224 :	t264 = 1
+	225 :	t265 = t263 * 16
+	226 :	t266 = t264 * 8
+	227 :	t267 = t265 + t266
+	228 :	t262 = x[t267]
+	229 :	t269 = t261 - t262
+	230 :	t270 = 1
+	231 :	t271 = 0
+	232 :	t272 = t270 * 16
+	233 :	t273 = t271 * 8
+	234 :	t274 = t272 + t273
+	235 :	t276 = m[t274]
+	236 :	t278 = 1
+	237 :	t279 = 0
+	238 :	t280 = t278 * 16
+	239 :	t281 = t279 * 8
+	240 :	t282 = t280 + t281
+	241 :	t277 = x[t282]
+	242 :	t284 = t276 - t277
+	243 :	t285 = 1
+	244 :	t286 = 1
+	245 :	t287 = t285 * 16
+	246 :	t288 = t286 * 8
+	247 :	t289 = t287 + t288
+	248 :	t291 = m[t289]
+	249 :	t293 = 1
+	250 :	t294 = 1
+	251 :	t295 = t293 * 16
+	252 :	t296 = t294 * 8
+	253 :	t297 = t295 + t296
+	254 :	t292 = x[t297]
+	255 :	t299 = t291 - t292
+	256 :	t300 = t254
+	257 :	t301 = 0
+	258 :	t302 = 0
+	259 :	t303 = t301 * 16
+	260 :	t304 = t302 * 8
+	261 :	t305 = t303 + t304
+	262 :	y[t305] = t300
+	263 :	t307 = t269
+	264 :	t308 = 0
+	265 :	t309 = 1
+	266 :	t310 = t308 * 16
+	267 :	t311 = t309 * 8
+	268 :	t312 = t310 + t311
+	269 :	y[t312] = t307
+	270 :	t314 = t284
+	271 :	t315 = 1
+	272 :	t316 = 0
+	273 :	t317 = t315 * 16
+	274 :	t318 = t316 * 8
+	275 :	t319 = t317 + t318
+	276 :	y[t319] = t314
+	277 :	t321 = t299
+	278 :	t322 = 1
+	279 :	t323 = 1
+	280 :	t324 = t322 * 16
+	281 :	t325 = t323 * 8
+	282 :	t326 = t324 + t325
+	283 :	y[t326] = t321
+	284 :	t328 = 1
+	285 :	param t328
+	286 :	t329 = call printStr, 1
+	287 :	t330 = 0
+	288 :	i = t330
+	289 :	t332 = 2
+	290 :	if i < t332 goto 295
+	291 :	goto 311
+	292 :	t334 = i
+	293 :	i = i + 1
+	294 :	goto 289
+	295 :	t335 = 0
+	296 :	j = t335
+	297 :	t337 = 2
+	298 :	if j < t337 goto 303
+	299 :	goto 292
+	300 :	t339 = j
+	301 :	j = j + 1
+	302 :	goto 297
+	303 :	t341 = i * 16
+	304 :	t342 = j * 8
+	305 :	t343 = t341 + t342
+	306 :	t345 = x[t343]
+	307 :	param t345
+	308 :	t346 = call printFlt, 1
+	309 :	goto 300
+	310 :	goto 292
+	311 :	t347 = 2
+	312 :	param t347
+	313 :	t348 = call printStr, 1
+	314 :	t349 = 0
+	315 :	i = t349
+	316 :	t351 = 2
+	317 :	if i < t351 goto 322
+	318 :	goto 338
+	319 :	t353 = i
+	320 :	i = i + 1
+	321 :	goto 316
+	322 :	t354 = 0
+	323 :	j = t354
+	324 :	t356 = 2
+	325 :	if j < t356 goto 330
+	326 :	goto 319
+	327 :	t358 = j
+	328 :	j = j + 1
+	329 :	goto 324
+	330 :	t360 = i * 16
+	331 :	t361 = j * 8
+	332 :	t362 = t360 + t361
+	333 :	t364 = y[t362]
+	334 :	param t364
+	335 :	t365 = call printFlt, 1
+	336 :	goto 327
+	337 :	goto 319
+------------------------------------------------------------------------------------------------------------------------------------------------------
+gcc -Wall -c ass5_15CS30003_4.s
+gcc ass5_15CS30003_4.o -o test4 -L. -lprintlib
